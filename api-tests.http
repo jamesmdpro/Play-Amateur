@@ -1,0 +1,87 @@
+# Test API Endpoints
+
+## 1. Login como Admin
+POST http://localhost:8000/api/login
+Content-Type: application/json
+
+{
+  "email": "admin@test.com",
+  "password": "password"
+}
+
+###
+
+## 2. Login como Jugador
+POST http://localhost:8000/api/login
+Content-Type: application/json
+
+{
+  "email": "jugador1@test.com",
+  "password": "password"
+}
+
+###
+
+## 3. Obtener usuario actual (requiere token)
+GET http://localhost:8000/api/me
+Authorization: Bearer YOUR_TOKEN_HERE
+
+###
+
+## 4. Listar todos los partidos (requiere token)
+GET http://localhost:8000/api/partidos
+Authorization: Bearer YOUR_TOKEN_HERE
+
+###
+
+## 5. Ver detalle de un partido (requiere token)
+GET http://localhost:8000/api/partidos/1
+Authorization: Bearer YOUR_TOKEN_HERE
+
+###
+
+## 6. Crear un partido (requiere token de admin o cancha)
+POST http://localhost:8000/api/partidos
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+
+{
+  "nombre": "Partido de Prueba",
+  "descripcion": "Partido creado desde API",
+  "fecha_hora": "2025-12-15 19:00:00",
+  "ubicacion": "Cancha de Prueba",
+  "cupos_totales": 12,
+  "cupos_suplentes": 3,
+  "costo": 100.00
+}
+
+###
+
+## 7. Inscribirse a un partido (requiere token de jugador)
+POST http://localhost:8000/api/partidos/1/inscribirse
+Authorization: Bearer YOUR_TOKEN_HERE
+
+###
+
+## 8. Generar equipos (requiere token de admin/cancha/creador)
+POST http://localhost:8000/api/partidos/1/generar-equipos
+Authorization: Bearer YOUR_TOKEN_HERE
+
+###
+
+## 9. Actualizar perfil (requiere token)
+PUT http://localhost:8000/api/profile
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+
+{
+  "name": "Nombre Actualizado",
+  "posicion": "ataque",
+  "nivel": 9
+}
+
+###
+
+## 10. Ver usuario específico (requiere token)
+GET http://localhost:8000/api/users/1
+Authorization: Bearer YOUR_TOKEN_HERE

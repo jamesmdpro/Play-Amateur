@@ -1,66 +1,231 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# ⚽ Play Amateur - Sistema de Gestión de Partidos de Fútbol
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistema completo para organizar partidos de fútbol amateur con gestión de jugadores, equipos automáticos, pagos y más.
 
-## About Laravel
+## 🚀 Estado del Proyecto
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**✅ FASE 1 COMPLETADA** - MVP Base funcional
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 📋 Características Implementadas
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Autenticación y Usuarios
+- ✅ Registro y login con Laravel Sanctum
+- ✅ Sistema de roles (jugador, árbitro, cancha, admin)
+- ✅ Perfil de usuario con posición, nivel y ciudad
+- ✅ Subida de foto de perfil
+- ✅ Wallet básica
 
-## Learning Laravel
+### Gestión de Partidos
+- ✅ Crear, editar y eliminar partidos
+- ✅ Lista de partidos disponibles
+- ✅ Inscripción de jugadores
+- ✅ Control de cupos titulares y suplentes
+- ✅ Estados de partido (abierto, cerrado, en curso, finalizado)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Equipos Automáticos
+- ✅ Generación automática de equipos balanceados
+- ✅ División por posiciones (arquero, defensa, medio, ataque)
+- ✅ Balanceo por nivel de habilidad
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## 🛠️ Tecnologías
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **Backend:** Laravel 11
+- **Base de datos:** MySQL
+- **Autenticación:** Laravel Sanctum
+- **API:** RESTful
 
-## Laravel Sponsors
+## 📦 Instalación
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Requisitos
+- PHP 8.2+
+- Composer
+- MySQL
+- Node.js (para frontend)
 
-### Premium Partners
+### Pasos
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+1. **Clonar el repositorio**
+```bash
+git clone <repository-url>
+cd temp-laravel
+```
 
-## Contributing
+2. **Instalar dependencias**
+```bash
+composer install
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+3. **Configurar entorno**
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-## Code of Conduct
+4. **Configurar base de datos**
+Editar `.env` con tus credenciales de MySQL:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=play_amateur
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+5. **Ejecutar migraciones y seeders**
+```bash
+php artisan migrate:fresh --seed
+```
 
-## Security Vulnerabilities
+6. **Iniciar servidor**
+```bash
+php artisan serve
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+El servidor estará disponible en: `http://localhost:8000`
 
-## License
+## 📚 Documentación
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- **[API_DOCS.md](API_DOCS.md)** - Documentación completa de endpoints
+- **[FASE_1_COMPLETADO.md](FASE_1_COMPLETADO.md)** - Resumen de la Fase 1
+- **[api-tests.http](api-tests.http)** - Archivo de pruebas HTTP
+
+## 🧪 Usuarios de Prueba
+
+Todos los usuarios tienen la contraseña: `password`
+
+| Email | Rol | Descripción |
+|-------|-----|-------------|
+| admin@test.com | admin | Administrador del sistema |
+| cancha@test.com | cancha | Dueño de cancha |
+| arbitro@test.com | arbitro | Árbitro |
+| jugador1@test.com | jugador | Jugador (Arquero) |
+| jugador2@test.com | jugador | Jugador (Defensa) |
+| ... | ... | ... |
+| jugador15@test.com | jugador | Jugador (Defensa) |
+
+## 🔑 Endpoints Principales
+
+### Autenticación
+```
+POST   /api/register       - Registrar usuario
+POST   /api/login          - Iniciar sesión
+POST   /api/logout         - Cerrar sesión
+GET    /api/me             - Usuario actual
+```
+
+### Partidos
+```
+GET    /api/partidos                      - Listar partidos
+POST   /api/partidos                      - Crear partido
+GET    /api/partidos/{id}                 - Ver partido
+PUT    /api/partidos/{id}                 - Actualizar partido
+DELETE /api/partidos/{id}                 - Eliminar partido
+POST   /api/partidos/{id}/inscribirse     - Inscribirse
+POST   /api/partidos/{id}/generar-equipos - Generar equipos
+```
+
+### Usuarios
+```
+GET    /api/users/{id}      - Ver usuario
+PUT    /api/profile         - Actualizar perfil
+POST   /api/profile/foto    - Subir foto
+POST   /api/wallet/update   - Actualizar wallet
+```
+
+## 🧪 Probar la API
+
+### Ejemplo: Login
+```bash
+curl -X POST http://localhost:8000/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@test.com","password":"password"}'
+```
+
+### Ejemplo: Listar Partidos
+```bash
+curl -X GET http://localhost:8000/api/partidos \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+```
+
+## 📁 Estructura del Proyecto
+
+```
+temp-laravel/
+├── app/
+│   ├── Http/
+│   │   └── Controllers/
+│   │       ├── AuthController.php
+│   │       ├── UserController.php
+│   │       └── PartidoController.php
+│   └── Models/
+│       ├── User.php
+│       ├── Partido.php
+│       └── Inscripcion.php
+├── database/
+│   ├── migrations/
+│   │   ├── 2025_11_26_040000_create_partidos_table.php
+│   │   └── 2025_11_26_040001_create_inscripciones_table.php
+│   └── seeders/
+│       ├── UserSeeder.php
+│       └── PartidoSeeder.php
+├── routes/
+│   └── api.php
+├── API_DOCS.md
+├── FASE_1_COMPLETADO.md
+└── README.md
+```
+
+## 🎯 Roadmap
+
+### ✅ Fase 1 - MVP Base (COMPLETADO)
+- Backend y arquitectura básica
+- Funciones para jugadores
+- Gestión de partidos
+- Equipos automáticos simples
+- Suplentes MVP
+
+### 🔄 Fase 2 - Pagos y Wallet (Próximo)
+- Integración con Mercado Pago
+- Sistema de pagos automáticos
+- Historial de transacciones
+- Reembolsos
+
+### 📅 Fase 3 - Funcionalidades Avanzadas
+- Sistema de DT (Director Técnico)
+- Estadísticas de jugadores
+- Sistema de valoración
+- Notificaciones
+
+### 🎨 Fase 4 - Frontend Completo
+- Aplicación web React/Vue
+- Aplicación móvil (opcional)
+- Dashboard de administración
+
+## 🤝 Contribuir
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 📝 Licencia
+
+Este proyecto está bajo la Licencia MIT.
+
+## 👥 Autores
+
+- Tu Nombre - Desarrollo inicial
+
+## 🙏 Agradecimientos
+
+- Laravel Framework
+- Comunidad de fútbol amateur
+- Todos los contribuidores
+
+---
+
+**¿Preguntas?** Abre un issue en el repositorio.
+
+**¿Listo para la Fase 2?** Revisa [FASE_1_COMPLETADO.md](FASE_1_COMPLETADO.md) para más detalles.
