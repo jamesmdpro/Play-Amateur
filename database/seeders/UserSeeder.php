@@ -15,9 +15,11 @@ class UserSeeder extends Seeder
             'email' => 'admin@test.com',
             'password' => Hash::make('password'),
             'rol' => 'admin',
+            'genero' => 'masculino',
             'posicion' => null,
             'nivel' => 10,
             'ciudad' => 'Buenos Aires',
+            'foto' => null,
             'wallet' => 1000.00,
         ]);
 

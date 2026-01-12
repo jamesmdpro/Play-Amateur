@@ -1,0 +1,56 @@
+⭐ FASE 3 — Árbitro + DT + Resultados + Estadísticas
+
+Objetivo: convertir el partido en un evento completo con datos reales.
+
+Incluye:
+1) Director Técnico (DT)
+
+Panel para revisar equipos
+
+Puede modificar posiciones
+
+Puede aprobar alineación final
+
+Si no hay DT → el sistema asigna uno de forma automática (roles voluntarios)
+
+2) Árbitro
+
+Panel del árbitro
+
+Confirmar presencia
+
+Registrar:
+
+goles
+
+tarjetas
+
+Enviar resultado final
+
+3) Validación
+
+2 jugadores de cada equipo deben confirmar el marcador
+
+4) Estadísticas
+
+Cada jugador tiene historial:
+
+partidos jugados
+
+goles
+
+tarjetas
+
+calificaciones
+
+posición más usada
+
+puntualidad
+
+5) Rating
+
+Jugadores califican jugadores
+
+Árbitro califica jugadores
+
+Jugadores califican árbitro

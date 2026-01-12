@@ -18,6 +18,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->enum('rol', ['jugador', 'arbitro', 'cancha', 'admin'])->default('jugador');
+            $table->enum('genero', ['masculino', 'femenino'])->nullable();
             $table->enum('posicion', ['arquero', 'defensa', 'medio', 'ataque'])->nullable();
             $table->integer('nivel')->default(1);
             $table->string('ciudad')->nullable();

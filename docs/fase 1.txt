@@ -1,0 +1,65 @@
+⭐ FASE 1 — MVP BASE (Fundación del sistema)
+
+Objetivo: tener la app funcionando con lo mínimo indispensable para organizar un partido simple.
+
+Incluye:
+1) Backend y arquitectura básica
+
+Proyecto Laravel 11
+
+Autenticación con Laravel Sanctum
+
+Roles: jugador, árbitro, cancha, admin
+
+Modelo de usuarios
+
+Migraciones base
+
+2) Funciones para jugadores
+
+Registro
+
+Login
+
+Perfil (posición, nivel, ciudad)
+
+Subida de foto
+
+Wallet básica (saldo manual, sin pagos automáticos todavía)
+
+3) Gestión de partidos (MVP)
+
+Crear partido (admin/cancha)
+
+Lista de partidos
+
+Ver detalle de un partido
+
+Jugador puede inscribirse (sin pago por ahora)
+
+4) Equipos automáticos simples
+
+Si hay cupos suficientes:
+
+dividir jugadores 50/50 por posiciones básicas (arquero / defensa / medio / ataque)
+
+No hay DT todavía
+
+5) Suplentes MVP
+
+Cupos extra marcados como suplentes
+
+6) Interfaz mínima
+
+Lista de partidos
+
+Detalle
+
+Botón “Unirme”
+
+Perfil del jugador
+
+Objetivo final Fase 1:
+
+👉 Ya puedes armar un partido con jugadores inscritos y equipos auto-generados.
+👉 Ya tienes login, registro, partidos, equipos, suplentes, roles básicos.
