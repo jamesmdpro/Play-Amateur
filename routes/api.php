@@ -55,4 +55,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/marcar-leida', [NotificacionController::class, 'marcarComoLeida']);
         Route::post('/marcar-todas-leidas', [NotificacionController::class, 'marcarTodasComoLeidas']);
     });
+
+    Route::prefix('jugador')->group(function () {
+        Route::get('/estadisticas', [UserController::class, 'estadisticasJugador']);
+        Route::get('/inscripciones', [InscripcionController::class, 'misInscripciones']);
+        Route::put('/perfil', [UserController::class, 'update']);
+        Route::post('/perfil/foto', [UserController::class, 'uploadFoto']);
+        Route::put('/perfil/password', [UserController::class, 'updatePassword']);
+    });
+
+    Route::get('/partidos/disponibles', [PartidoController::class, 'disponibles']);
+    Route::post('/partidos/{id}/inscribir', [InscripcionController::class, 'inscribirse']);
 });

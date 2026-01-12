@@ -37,8 +37,23 @@ Route::middleware(['auth'])->group(function () {
     })->name('arbitro.dashboard')->middleware('role:arbitro');
 
     Route::get('/jugador/dashboard', function () {
-        return view('partidos.dashboard');
+        return view('jugador.dashboard');
     })->name('jugador.dashboard')->middleware('role:jugador');
+
+    Route::get('/jugador/perfil', function () {
+        return view('jugador.perfil');
+    })->name('jugador.perfil')->middleware('role:jugador');
+
+    Route::prefix('jugador')->middleware('role:jugador')->group(function () {
+        Route::get('/estadisticas', [App\Http\Controllers\UserController::class, 'estadisticasJugador'])->name('jugador.estadisticas');
+        Route::get('/inscripciones', [App\Http\Controllers\InscripcionController::class, 'misInscripciones'])->name('jugador.inscripciones');
+        Route::put('/perfil/actualizar', [App\Http\Controllers\UserController::class, 'update'])->name('jugador.perfil.update');
+        Route::post('/perfil/foto', [App\Http\Controllers\UserController::class, 'uploadFoto'])->name('jugador.perfil.foto');
+        Route::put('/perfil/password', [App\Http\Controllers\UserController::class, 'updatePassword'])->name('jugador.perfil.password');
+    });
+
+    Route::get('/partidos/disponibles', [App\Http\Controllers\PartidoController::class, 'disponibles'])->name('partidos.disponibles');
+    Route::post('/partidos/{id}/inscribir', [App\Http\Controllers\InscripcionController::class, 'inscribirse'])->name('partidos.inscribir');
 
     Route::get('/wallet', function () {
         return view('wallet.index');

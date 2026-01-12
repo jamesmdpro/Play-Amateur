@@ -215,4 +215,28 @@ class PartidoController extends Controller
             'message' => 'Partido eliminado exitosamente',
         ]);
     }
+
+    public function disponibles()
+    {
+        $partidos = Partido::where('estado', 'abierto')
+            ->whereDate('fecha_hora', '>=', now())
+            ->with(['creador'])
+            ->orderBy('fecha_hora', 'asc')
+            ->get()
+            ->map(function ($partido) {
+                return [
+                    'id' => $partido->id,
+                    'nombre' => $partido->nombre,
+                    'fecha' => $partido->fecha_hora->format('d/m/Y H:i'),
+                    'cancha' => $partido->ubicacion,
+                    'costo' => $partido->costo,
+                    'cupos_disponibles' => $partido->cuposDisponibles(),
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $partidos
+        ]);
+    }
 }

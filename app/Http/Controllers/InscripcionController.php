@@ -13,7 +13,7 @@ class InscripcionController extends Controller
     public function inscribirse(Request $request, $partidoId)
     {
         $request->validate([
-            'equipo' => 'required|in:A,B',
+            'equipo' => 'nullable|in:A,B',
         ]);
 
         $user = $request->user();
@@ -22,6 +22,7 @@ class InscripcionController extends Controller
         if ($user->tieneSancionActiva()) {
             $sancion = $user->sancionActiva();
             return response()->json([
+                'success' => false,
                 'message' => 'Tienes una sanción activa hasta ' . $sancion->fecha_fin->format('d/m/Y'),
                 'sancion' => $sancion,
             ], 403);
@@ -32,10 +33,13 @@ class InscripcionController extends Controller
             ->first();
 
         if ($inscripcionExistente) {
-            return response()->json(['message' => 'Ya estás inscrito en este partido'], 400);
+            return response()->json([
+                'success' => false,
+                'message' => 'Ya estás inscrito en este partido'
+            ], 400);
         }
 
-        $equipo = $request->equipo;
+        $equipo = $request->input('equipo', 'A');
         $jugadoresEquipo = Inscripcion::where('partido_id', $partidoId)
             ->where('equipo', $equipo)
             ->where('es_suplente', false)
@@ -52,6 +56,7 @@ class InscripcionController extends Controller
         ]);
 
         return response()->json([
+            'success' => true,
             'message' => $esSuplente ? 'Te has inscrito como suplente' : 'Te has inscrito exitosamente',
             'inscripcion' => $inscripcion,
         ], 201);
@@ -181,8 +186,28 @@ class InscripcionController extends Controller
         $inscripciones = $user->inscripciones()
             ->with('partido')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->get()
+            ->map(function ($inscripcion) {
+                $estadoColor = match($inscripcion->estado) {
+                    'inscrito' => 'warning',
+                    'confirmado' => 'success',
+                    'cancelado' => 'danger',
+                    default => 'secondary'
+                };
 
-        return response()->json($inscripciones);
+                return [
+                    'id' => $inscripcion->id,
+                    'partido' => $inscripcion->partido->nombre ?? 'N/A',
+                    'fecha' => $inscripcion->partido->fecha_hora->format('d/m/Y H:i'),
+                    'cancha' => $inscripcion->partido->ubicacion ?? 'N/A',
+                    'estado' => ucfirst($inscripcion->estado),
+                    'estado_color' => $estadoColor,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $inscripciones
+        ]);
     }
 }

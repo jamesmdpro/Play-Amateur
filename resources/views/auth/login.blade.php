@@ -5,6 +5,13 @@
 @section('content')
 <div class="auth-container">
     <div class="auth-card">
+        <a href="{{ url('/') }}" class="back-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Volver
+        </a>
+
         <div class="auth-header">
             <h1>Bienvenido</h1>
             <p>Inicia sesión en tu cuenta</p>
