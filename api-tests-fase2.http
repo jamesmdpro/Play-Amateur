@@ -1,0 +1,141 @@
+### FASE 2 - API Tests
+
+@baseUrl = http://localhost:8000/api
+@token = YOUR_TOKEN_HERE
+
+### ========== WALLET ==========
+
+### Obtener saldo y transacciones
+GET {{baseUrl}}/wallet
+Authorization: Bearer {{token}}
+
+### Solicitar recarga
+POST {{baseUrl}}/wallet/recarga
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="monto"
+
+50000
+--boundary
+Content-Disposition: form-data; name="comprobante"; filename="comprobante.jpg"
+Content-Type: image/jpeg
+
+< ./comprobante.jpg
+--boundary--
+
+### Aprobar recarga (Admin)
+POST {{baseUrl}}/wallet/recarga/1/aprobar
+Authorization: Bearer {{token}}
+
+### Rechazar recarga (Admin)
+POST {{baseUrl}}/wallet/recarga/1/rechazar
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "notas": "Comprobante no válido"
+}
+
+### Listar recargas pendientes (Admin)
+GET {{baseUrl}}/wallet/recargas-pendientes
+Authorization: Bearer {{token}}
+
+### ========== INSCRIPCIONES ==========
+
+### Mis inscripciones
+GET {{baseUrl}}/inscripciones/mis-inscripciones
+Authorization: Bearer {{token}}
+
+### Inscribirse a partido
+POST {{baseUrl}}/inscripciones/partido/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "equipo": "A"
+}
+
+### Confirmar pago
+POST {{baseUrl}}/inscripciones/1/confirmar-pago
+Authorization: Bearer {{token}}
+
+### Cancelar inscripción
+POST {{baseUrl}}/inscripciones/1/cancelar
+Authorization: Bearer {{token}}
+
+### ========== SANCIONES ==========
+
+### Mis sanciones
+GET {{baseUrl}}/sanciones/mis-sanciones
+Authorization: Bearer {{token}}
+
+### Pagar reactivación
+POST {{baseUrl}}/sanciones/1/pagar
+Authorization: Bearer {{token}}
+
+### Listado de sanciones (Admin)
+GET {{baseUrl}}/sanciones/listado
+Authorization: Bearer {{token}}
+
+### ========== NOTIFICACIONES ==========
+
+### Todas las notificaciones
+GET {{baseUrl}}/notificaciones
+Authorization: Bearer {{token}}
+
+### Notificaciones no leídas
+GET {{baseUrl}}/notificaciones/no-leidas
+Authorization: Bearer {{token}}
+
+### Marcar como leída
+POST {{baseUrl}}/notificaciones/1/marcar-leida
+Authorization: Bearer {{token}}
+
+### Marcar todas como leídas
+POST {{baseUrl}}/notificaciones/marcar-todas-leidas
+Authorization: Bearer {{token}}
+
+### ========== FLUJO COMPLETO ==========
+
+### 1. Usuario se inscribe
+POST {{baseUrl}}/inscripciones/partido/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "equipo": "A"
+}
+
+### 2. Usuario confirma pago (descuenta del saldo)
+POST {{baseUrl}}/inscripciones/1/confirmar-pago
+Authorization: Bearer {{token}}
+
+### 3. Usuario cancela (recibe sanción si ya pagó)
+POST {{baseUrl}}/inscripciones/1/cancelar
+Authorization: Bearer {{token}}
+
+### 4. Usuario paga sanción para reactivar
+POST {{baseUrl}}/sanciones/1/pagar
+Authorization: Bearer {{token}}
+
+### 5. Usuario solicita recarga
+POST {{baseUrl}}/wallet/recarga
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="monto"
+
+50000
+--boundary
+Content-Disposition: form-data; name="comprobante"; filename="comprobante.jpg"
+Content-Type: image/jpeg
+
+< ./comprobante.jpg
+--boundary--
+
+### 6. Admin aprueba recarga
+POST {{baseUrl}}/wallet/recarga/1/aprobar
+Authorization: Bearer {{token}}

@@ -1,0 +1,24 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('inscripciones', function (Blueprint $table) {
+            $table->enum('estado', ['inscrito', 'confirmado', 'cancelado', 'suplente'])->default('inscrito')->change();
+            $table->timestamp('confirmado_en')->nullable()->after('estado');
+            $table->boolean('pago_realizado')->default(false)->after('confirmado_en');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('inscripciones', function (Blueprint $table) {
+            $table->dropColumn(['confirmado_en', 'pago_realizado']);
+        });
+    }
+};

@@ -23,7 +23,25 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended('home');
+
+            $user = Auth::user();
+
+            \Log::info('Login successful', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'rol' => $user->rol,
+                'session_id' => $request->session()->getId()
+            ]);
+
+            $redirectRoute = match($user->rol) {
+                'admin' => 'admin.dashboard',
+                'cancha' => 'cancha.dashboard',
+                'arbitro' => 'arbitro.dashboard',
+                'jugador' => 'jugador.dashboard',
+                default => 'home',
+            };
+
+            return redirect()->intended(route($redirectRoute));
         }
 
         throw ValidationException::withMessages([

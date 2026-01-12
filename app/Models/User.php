@@ -74,4 +74,73 @@ class User extends Authenticatable
     {
         return $this->rol === 'jugador';
     }
+
+    public function transacciones()
+    {
+        return $this->hasMany(WalletTransaction::class);
+    }
+
+    public function sanciones()
+    {
+        return $this->hasMany(Sancion::class);
+    }
+
+    public function notificaciones()
+    {
+        return $this->hasMany(Notificacion::class);
+    }
+
+    public function tieneSancionActiva()
+    {
+        return $this->sanciones()
+            ->where('activa', true)
+            ->where('fecha_fin', '>=', now())
+            ->exists();
+    }
+
+    public function sancionActiva()
+    {
+        return $this->sanciones()
+            ->where('activa', true)
+            ->where('fecha_fin', '>=', now())
+            ->first();
+    }
+
+    public function tieneSaldo($monto)
+    {
+        return $this->wallet >= $monto;
+    }
+
+    public function descontarSaldo($monto, $tipo, $partidoId = null, $notas = null)
+    {
+        $saldoAnterior = $this->wallet;
+        $this->wallet -= $monto;
+        $this->save();
+
+        return $this->transacciones()->create([
+            'tipo' => $tipo,
+            'monto' => -$monto,
+            'saldo_anterior' => $saldoAnterior,
+            'saldo_nuevo' => $this->wallet,
+            'estado' => 'aprobado',
+            'partido_id' => $partidoId,
+            'notas' => $notas,
+        ]);
+    }
+
+    public function agregarSaldo($monto, $tipo, $notas = null)
+    {
+        $saldoAnterior = $this->wallet;
+        $this->wallet += $monto;
+        $this->save();
+
+        return $this->transacciones()->create([
+            'tipo' => $tipo,
+            'monto' => $monto,
+            'saldo_anterior' => $saldoAnterior,
+            'saldo_nuevo' => $this->wallet,
+            'estado' => 'aprobado',
+            'notas' => $notas,
+        ]);
+    }
 }
