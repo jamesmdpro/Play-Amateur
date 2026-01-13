@@ -1,13 +1,13 @@
 @extends('layouts.jugador')
 
-@section('title', 'Mi Perfil')
+@section('title', 'Mi Perfil - Jugador')
 
 @section('content')
 <style>
     .profile-header {
         background: linear-gradient(135deg, #1a5f3f 0%, #2d8659 100%);
-        border-radius: 15px;
-        padding: 30px;
+        border-radius: 20px;
+        padding: 40px;
         color: white;
         margin-bottom: 30px;
         box-shadow: 0 8px 25px rgba(26, 95, 63, 0.2);
@@ -23,352 +23,204 @@
     }
 
     .profile-card {
-        border: none;
+        background: white;
         border-radius: 15px;
+        padding: 30px;
         box-shadow: 0 4px 15px rgba(26, 95, 63, 0.08);
-        overflow: hidden;
-        margin-bottom: 25px;
+        margin-bottom: 20px;
     }
 
-    .profile-card .card-header {
-        background: linear-gradient(135deg, #3ba76d 0%, #4ecb8f 100%);
-        color: white;
-        padding: 20px;
-        border: none;
-        font-weight: 600;
-    }
-
-    .profile-card .card-body {
-        padding: 25px;
-    }
-
-    .form-label {
+    .profile-card h5 {
         color: #1a5f3f;
+        font-weight: 700;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 3px solid #4ecb8f;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 15px 0;
+        border-bottom: 1px solid #f0f7f4;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
         font-weight: 600;
-        margin-bottom: 8px;
+        color: #1a5f3f;
     }
 
-    .form-control {
-        border: 2px solid #e0f2e9;
-        border-radius: 8px;
-        padding: 10px 15px;
-        transition: all 0.3s;
+    .info-value {
+        color: #6c757d;
     }
 
-    .form-control:focus {
-        border-color: #3ba76d;
-        box-shadow: 0 0 0 0.2rem rgba(59, 167, 109, 0.15);
-    }
-
-    .btn-primary {
+    .btn-edit {
         background: linear-gradient(135deg, #2d8659 0%, #3ba76d 100%);
         border: none;
+        color: white;
         padding: 12px 30px;
-        border-radius: 8px;
+        border-radius: 10px;
         font-weight: 600;
         transition: all 0.3s;
     }
 
-    .btn-primary:hover {
+    .btn-edit:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(45, 134, 89, 0.3);
-    }
-
-    .btn-secondary {
-        background: #6c757d;
-        border: none;
-        padding: 10px 25px;
-        border-radius: 8px;
-        font-weight: 500;
-        transition: all 0.3s;
-    }
-
-    .btn-secondary:hover {
-        background: #5a6268;
-        transform: translateY(-2px);
-    }
-
-    .upload-btn {
-        background: white;
-        color: #2d8659;
-        border: 2px solid #2d8659;
-        padding: 8px 20px;
-        border-radius: 8px;
-        font-weight: 500;
-        transition: all 0.3s;
-    }
-
-    .upload-btn:hover {
-        background: #2d8659;
+        box-shadow: 0 6px 20px rgba(45, 134, 89, 0.4);
         color: white;
+    }
+
+    .stat-badge {
+        background: linear-gradient(135deg, #3ba76d 0%, #4ecb8f 100%);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        display: inline-block;
+        margin: 5px;
     }
 </style>
 
-<!-- Profile Header -->
 <div class="profile-header">
     <div class="row align-items-center">
-        <div class="col-auto">
-            <img src="{{ auth()->user()->foto ?? asset('images/default-avatar.svg') }}"
-                 alt="Foto de perfil"
-                 class="profile-avatar"
-                 id="previewFoto">
+        <div class="col-md-2 text-center">
+            <img src="{{ auth()->user()->avatar ?? asset('images/players/jugador.jpeg') }}" alt="Avatar" class="profile-avatar">
         </div>
-        <div class="col">
+        <div class="col-md-7">
             <h2 class="mb-2">{{ auth()->user()->name }}</h2>
             <p class="mb-1"><i class="bi bi-envelope me-2"></i>{{ auth()->user()->email }}</p>
-            <p class="mb-0"><i class="bi bi-person-badge me-2"></i>{{ ucfirst(auth()->user()->role) }}</p>
+            <p class="mb-0"><i class="bi bi-calendar me-2"></i>Miembro desde {{ auth()->user()->created_at->format('d/m/Y') }}</p>
         </div>
-        <div class="col-auto">
-            <form id="formFoto" enctype="multipart/form-data">
-                @csrf
-                <input type="file" name="foto" id="inputFoto" class="d-none" accept="image/*">
-                <button type="button" class="upload-btn" onclick="document.getElementById('inputFoto').click()">
-                    <i class="bi bi-camera-fill me-2"></i>Cambiar Foto
-                </button>
-            </form>
+        <div class="col-md-3 text-end">
+            <button class="btn btn-edit" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                <i class="bi bi-pencil-square me-2"></i>Editar Perfil
+            </button>
         </div>
     </div>
 </div>
 
 <div class="row">
-    <div class="col-lg-8">
-
-    <div class="col-lg-8">
+    <div class="col-md-6">
         <div class="profile-card">
-            <div class="card-header">
-                <i class="bi bi-person-lines-fill me-2"></i>Información Personal
+            <h5><i class="bi bi-person-badge me-2"></i>Información Personal</h5>
+            <div class="info-row">
+                <span class="info-label">Nombre Completo:</span>
+                <span class="info-value">{{ auth()->user()->name }}</span>
             </div>
-            <div class="card-body">
-                <form id="formPerfil">
-                    @csrf
-                    @method('PUT')
-
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label"><i class="bi bi-person me-2"></i>Nombre Completo</label>
-                            <input type="text" name="name" class="form-control" value="{{ auth()->user()->name }}" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label"><i class="bi bi-envelope me-2"></i>Correo Electrónico</label>
-                            <input type="email" name="email" class="form-control" value="{{ auth()->user()->email }}" required>
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label"><i class="bi bi-telephone me-2"></i>Teléfono</label>
-                            <input type="text" name="telefono" class="form-control" value="{{ auth()->user()->telefono ?? '' }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label"><i class="bi bi-calendar me-2"></i>Fecha de Nacimiento</label>
-                            <input type="date" name="fecha_nacimiento" class="form-control" value="{{ auth()->user()->fecha_nacimiento ?? '' }}">
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label"><i class="bi bi-geo-alt me-2"></i>Dirección</label>
-                        <input type="text" name="direccion" class="form-control" value="{{ auth()->user()->direccion ?? '' }}">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label"><i class="bi bi-card-text me-2"></i>Documento de Identidad</label>
-                        <input type="text" name="documento" class="form-control" value="{{ auth()->user()->documento ?? '' }}">
-                    </div>
-
-                    <div class="d-flex justify-content-end gap-2">
-                        <button type="button" class="btn btn-secondary" onclick="location.reload()">
-                            <i class="bi bi-x-circle me-2"></i>Cancelar
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle me-2"></i>Guardar Cambios
-                        </button>
-                    </div>
-                </form>
+            <div class="info-row">
+                <span class="info-label">Email:</span>
+                <span class="info-value">{{ auth()->user()->email }}</span>
             </div>
-        </div>
-
-        <div class="profile-card">
-            <div class="card-header">
-                <i class="bi bi-shield-lock me-2"></i>Cambiar Contraseña
+            <div class="info-row">
+                <span class="info-label">Teléfono:</span>
+                <span class="info-value">{{ auth()->user()->phone ?? 'No registrado' }}</span>
             </div>
-            <div class="card-body">
-                <form id="formPassword">
-                    @csrf
-                    @method('PUT')
-
-                    <div class="mb-3">
-                        <label class="form-label"><i class="bi bi-lock me-2"></i>Contraseña Actual</label>
-                        <input type="password" name="current_password" class="form-control" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label"><i class="bi bi-lock-fill me-2"></i>Nueva Contraseña</label>
-                        <input type="password" name="password" class="form-control" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label"><i class="bi bi-check-circle me-2"></i>Confirmar Nueva Contraseña</label>
-                        <input type="password" name="password_confirmation" class="form-control" required>
-                    </div>
-
-                    <div class="d-flex justify-content-end">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-key me-2"></i>Actualizar Contraseña
-                        </button>
-                    </div>
-                </form>
+            <div class="info-row">
+                <span class="info-label">Fecha de Nacimiento:</span>
+                <span class="info-value">{{ auth()->user()->birth_date ?? 'No registrado' }}</span>
             </div>
         </div>
     </div>
 
-    <div class="col-lg-4">
+    <div class="col-md-6">
         <div class="profile-card">
-            <div class="card-body">
-                <h6 class="mb-3" style="color: #1a5f3f; font-weight: 700;">
-                    <i class="bi bi-info-circle me-2"></i>Información Adicional
-                </h6>
-                <div class="mb-3 pb-3 border-bottom">
-                    <small class="text-muted d-block mb-1">Rol</small>
-                    <span class="badge" style="background: linear-gradient(135deg, #2d8659 0%, #3ba76d 100%); font-size: 0.9rem;">
-                        {{ ucfirst(auth()->user()->role) }}
-                    </span>
+            <h5><i class="bi bi-trophy me-2"></i>Estadísticas</h5>
+            <div class="info-row">
+                <span class="info-label">Partidos Jugados:</span>
+                <span class="info-value" id="partidosJugados">0</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Saldo Actual:</span>
+                <span class="info-value">${{ number_format(auth()->user()->wallet ?? 0, 0) }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Tarjetas Amarillas:</span>
+                <span class="info-value" id="tarjetasAmarillas">0</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Tarjetas Rojas:</span>
+                <span class="info-value" id="tarjetasRojas">0</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="profile-card">
+            <h5><i class="bi bi-gear me-2"></i>Configuración de Cuenta</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <button class="btn btn-outline-primary w-100 mb-3">
+                        <i class="bi bi-key me-2"></i>Cambiar Contraseña
+                    </button>
                 </div>
-                <div class="mb-3 pb-3 border-bottom">
-                    <small class="text-muted d-block mb-1">Miembro desde</small>
-                    <strong style="color: #1a5f3f;">{{ auth()->user()->created_at->format('d/m/Y') }}</strong>
-                </div>
-                <div class="mb-3 pb-3 border-bottom">
-                    <small class="text-muted d-block mb-1">Estado</small>
-                    <span class="badge bg-success">
-                        <i class="bi bi-check-circle me-1"></i>Activo
-                    </span>
-                </div>
-                <div>
-                    <small class="text-muted d-block mb-1">Saldo Actual</small>
-                    <h4 style="color: #1a5f3f; font-weight: 700;">
-                        ${{ number_format(auth()->user()->wallet ?? 0, 0) }}
-                    </h4>
+                <div class="col-md-6">
+                    <button class="btn btn-outline-success w-100 mb-3">
+                        <i class="bi bi-bell me-2"></i>Notificaciones
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </div>
-@endsection
+
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1a5f3f 0%, #2d8659 100%); color: white;">
+                <h5 class="modal-title">Editar Perfil</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label">Nombre Completo</label>
+                        <input type="text" class="form-control" name="name" value="{{ auth()->user()->name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email" value="{{ auth()->user()->email }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" class="form-control" name="phone" value="{{ auth()->user()->phone ?? '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fecha de Nacimiento</label>
+                        <input type="date" class="form-control" name="birth_date" value="{{ auth()->user()->birth_date ?? '' }}">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-edit" onclick="saveProfile()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @push('scripts')
 <script>
-    document.getElementById('inputFoto').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('previewFoto').src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+    function saveProfile() {
+        alert('Funcionalidad de guardar perfil - Próximamente');
+    }
 
-            const formData = new FormData();
-            formData.append('foto', file);
-            formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
-
-            fetch('/jugador/perfil/foto', {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                credentials: 'same-origin',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Foto actualizada correctamente');
-                    location.reload();
-                } else if (data.errors) {
-                    const errorMessages = Object.values(data.errors).flat().join('\n');
-                    alert('Errores de validación:\n' + errorMessages);
-                } else {
-                    alert(data.message || 'Error al actualizar la foto');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al subir la foto');
-            });
-        }
-    });
-
-    document.getElementById('formPerfil').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const formData = new FormData(this);
-        const data = Object.fromEntries(formData);
-
-        fetch('/jugador/perfil/actualizar', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify({...data, _method: 'PUT'})
-        })
+    fetch('/api/jugador/estadisticas')
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Perfil actualizado correctamente');
-                location.reload();
-            } else if (data.errors) {
-                const errorMessages = Object.values(data.errors).flat().join('\n');
-                alert('Errores de validación:\n' + errorMessages);
-            } else {
-                alert(data.message || 'Error al actualizar el perfil');
+                document.getElementById('partidosJugados').textContent = data.partidos_jugados || 0;
+                document.getElementById('tarjetasAmarillas').textContent = data.tarjetas_amarillas || 0;
+                document.getElementById('tarjetasRojas').textContent = data.tarjetas_rojas || 0;
             }
         })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al actualizar el perfil');
-        });
-    });
-
-    document.getElementById('formPassword').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const formData = new FormData(this);
-        const data = Object.fromEntries(formData);
-
-        if (data.password !== data.password_confirmation) {
-            alert('Las contraseñas no coinciden');
-            return;
-        }
-
-        fetch('/jugador/perfil/password', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify({...data, _method: 'PUT'})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Contraseña actualizada correctamente');
-                this.reset();
-            } else if (data.errors) {
-                const errorMessages = Object.values(data.errors).flat().join('\n');
-                alert('Errores de validación:\n' + errorMessages);
-            } else {
-                alert(data.message || 'Error al actualizar la contraseña');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al actualizar la contraseña');
-        });
-    });
+        .catch(error => console.error('Error:', error));
 </script>
 @endpush
+@endsection

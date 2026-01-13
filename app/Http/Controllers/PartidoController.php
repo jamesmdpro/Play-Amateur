@@ -50,6 +50,7 @@ class PartidoController extends Controller
             'cupos_totales' => 'required|integer|min:2',
             'cupos_suplentes' => 'sometimes|integer|min:0',
             'costo' => 'sometimes|numeric|min:0',
+            'con_arbitro' => 'sometimes|boolean',
         ]);
 
         $partido = Partido::create([
@@ -60,8 +61,11 @@ class PartidoController extends Controller
             'cupos_totales' => $request->cupos_totales,
             'cupos_suplentes' => $request->cupos_suplentes ?? 0,
             'costo' => $request->costo ?? 0,
+            'con_arbitro' => $request->con_arbitro ?? false,
             'creador_id' => $user->id,
         ]);
+
+        $partido->calcularCostoPorJugador();
 
         return response()->json([
             'message' => 'Partido creado exitosamente',
@@ -127,6 +131,10 @@ class PartidoController extends Controller
             return response()->json(['message' => 'Ya estás inscrito en este partido'], 400);
         }
 
+        if ($user->saldo < $partido->costo_por_jugador) {
+            return response()->json(['message' => 'Saldo insuficiente'], 400);
+        }
+
         $cuposDisponibles = $partido->cuposDisponibles();
         $cuposSuplentesDisponibles = $partido->cuposSuplentesDisponibles();
 
@@ -139,6 +147,16 @@ class PartidoController extends Controller
             $esSuplente = true;
         }
 
+        $user->saldo -= $partido->costo_por_jugador;
+        $user->save();
+
+        \App\Models\WalletTransaction::create([
+            'user_id' => $user->id,
+            'tipo' => 'retiro',
+            'monto' => $partido->costo_por_jugador,
+            'descripcion' => 'Inscripción al partido: ' . $partido->nombre,
+        ]);
+
         $inscripcion = Inscripcion::create([
             'partido_id' => $partido->id,
             'jugador_id' => $user->id,
@@ -148,6 +166,7 @@ class PartidoController extends Controller
         return response()->json([
             'message' => $esSuplente ? 'Inscrito como suplente exitosamente' : 'Inscrito exitosamente',
             'inscripcion' => $inscripcion,
+            'saldo_restante' => $user->saldo,
         ], 201);
     }
 
@@ -237,6 +256,172 @@ class PartidoController extends Controller
         return response()->json([
             'success' => true,
             'data' => $partidos
+        ]);
+    }
+
+    public function storeFromJugador(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'tipo' => 'required|string',
+            'fecha' => 'required|date|after:today',
+            'hora' => 'required',
+            'descripcion' => 'nullable|string',
+            'ubicacion' => 'required|string|max:255',
+            'ciudad' => 'required|string|max:100',
+            'jugadores_por_equipo' => 'required|integer|min:5',
+            'max_jugadores' => 'required|integer|min:10',
+            'costo' => 'required|numeric|min:0',
+            'estado' => 'nullable|string',
+            'nivel' => 'nullable|string',
+        ]);
+
+        $fechaHora = $request->fecha . ' ' . $request->hora;
+
+        $partido = Partido::create([
+            'nombre' => $request->nombre,
+            'descripcion' => $request->descripcion,
+            'fecha_hora' => $fechaHora,
+            'ubicacion' => $request->ubicacion . ', ' . $request->ciudad,
+            'cupos_totales' => $request->max_jugadores,
+            'cupos_suplentes' => 0,
+            'costo' => $request->costo,
+            'creador_id' => $user->id,
+            'estado' => $request->estado ?? 'abierto',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Partido creado exitosamente',
+            'partido' => $partido,
+        ], 201);
+    }
+
+    public function edit($id)
+    {
+        $partido = Partido::findOrFail($id);
+        $user = request()->user();
+
+        if ($partido->creador_id !== $user->id && !$user->isAdmin()) {
+            abort(403, 'No autorizado');
+        }
+
+        return view('jugador.editar-partido', compact('partido'));
+    }
+
+    public function partidosCreados()
+    {
+        $user = request()->user();
+
+        $partidos = Partido::where('creador_id', $user->id)
+            ->where('estado', '!=', 'finalizado')
+            ->where('estado', '!=', 'en_curso')
+            ->with(['inscripciones'])
+            ->orderBy('fecha_hora', 'desc')
+            ->get()
+            ->map(function ($partido) use ($user) {
+                return [
+                    'id' => $partido->id,
+                    'nombre' => $partido->nombre,
+                    'fecha_formateada' => $partido->fecha_hora->format('d/m/Y'),
+                    'hora' => $partido->fecha_hora->format('H:i'),
+                    'ubicacion' => $partido->ubicacion,
+                    'costo' => number_format($partido->costo, 0),
+                    'max_jugadores' => $partido->cupos_totales,
+                    'inscritos' => $partido->inscripciones->count(),
+                    'estado' => $partido->estado,
+                    'estado_texto' => ucfirst($partido->estado),
+                    'puede_editar' => $partido->creador_id === $user->id,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'partidos' => $partidos
+        ]);
+    }
+
+    public function partidosEnMarcha()
+    {
+        $user = request()->user();
+
+        $partidos = Partido::where('creador_id', $user->id)
+            ->where('estado', 'en_curso')
+            ->with(['inscripciones'])
+            ->orderBy('fecha_hora', 'desc')
+            ->get()
+            ->map(function ($partido) use ($user) {
+                return [
+                    'id' => $partido->id,
+                    'nombre' => $partido->nombre,
+                    'fecha_formateada' => $partido->fecha_hora->format('d/m/Y'),
+                    'hora' => $partido->fecha_hora->format('H:i'),
+                    'ubicacion' => $partido->ubicacion,
+                    'costo' => number_format($partido->costo, 0),
+                    'max_jugadores' => $partido->cupos_totales,
+                    'inscritos' => $partido->inscripciones->count(),
+                    'estado' => $partido->estado,
+                    'estado_texto' => 'En Marcha',
+                    'puede_editar' => false,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'partidos' => $partidos
+        ]);
+    }
+
+    public function partidosFinalizados()
+    {
+        $user = request()->user();
+
+        $partidos = Partido::where('creador_id', $user->id)
+            ->where('estado', 'finalizado')
+            ->with(['inscripciones'])
+            ->orderBy('fecha_hora', 'desc')
+            ->get()
+            ->map(function ($partido) use ($user) {
+                return [
+                    'id' => $partido->id,
+                    'nombre' => $partido->nombre,
+                    'fecha_formateada' => $partido->fecha_hora->format('d/m/Y'),
+                    'hora' => $partido->fecha_hora->format('H:i'),
+                    'ubicacion' => $partido->ubicacion,
+                    'costo' => number_format($partido->costo, 0),
+                    'max_jugadores' => $partido->cupos_totales,
+                    'inscritos' => $partido->inscripciones->count(),
+                    'estado' => $partido->estado,
+                    'estado_texto' => 'Finalizado',
+                    'puede_editar' => false,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'partidos' => $partidos
+        ]);
+    }
+
+    public function cancelarPartido($id)
+    {
+        $partido = Partido::findOrFail($id);
+        $user = request()->user();
+
+        if ($partido->creador_id !== $user->id && !$user->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autorizado'
+            ], 403);
+        }
+
+        $partido->update(['estado' => 'cancelado']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Partido cancelado exitosamente'
         ]);
     }
 }

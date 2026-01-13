@@ -32,6 +32,22 @@ Route::middleware(['auth'])->group(function () {
         return view('cancha.dashboard');
     })->name('cancha.dashboard')->middleware('role:cancha');
 
+    Route::prefix('cancha')->middleware('role:cancha')->group(function () {
+        Route::get('/perfil', function () {
+            return view('cancha.perfil');
+        })->name('cancha.perfil');
+
+        Route::get('/crear-encuentro', function () {
+            return view('cancha.crear-encuentro');
+        })->name('cancha.crear-encuentro');
+
+        Route::get('/partidos', function () {
+            return view('cancha.partidos');
+        })->name('cancha.partidos');
+
+        Route::post('/partidos/store', [App\Http\Controllers\PartidoController::class, 'storeFromCancha'])->name('cancha.partidos.store');
+    });
+
     Route::get('/arbitro/dashboard', function () {
         return view('arbitro.dashboard');
     })->name('arbitro.dashboard')->middleware('role:arbitro');
@@ -50,6 +66,19 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/perfil/actualizar', [App\Http\Controllers\UserController::class, 'update'])->name('jugador.perfil.update');
         Route::post('/perfil/foto', [App\Http\Controllers\UserController::class, 'uploadFoto'])->name('jugador.perfil.foto');
         Route::put('/perfil/password', [App\Http\Controllers\UserController::class, 'updatePassword'])->name('jugador.perfil.password');
+
+        Route::get('/crear-encuentro', function () {
+            return view('jugador.crear-encuentro');
+        })->name('jugador.crear-encuentro');
+
+        Route::get('/partidos', function () {
+            return view('jugador.partidos');
+        })->name('jugador.partidos');
+
+        Route::post('/partidos/store', [App\Http\Controllers\PartidoController::class, 'storeFromJugador'])->name('jugador.partidos.store');
+        Route::get('/partidos/{id}', [App\Http\Controllers\PartidoController::class, 'show'])->name('jugador.partidos.show');
+        Route::get('/partidos/{id}/editar', [App\Http\Controllers\PartidoController::class, 'edit'])->name('jugador.partidos.edit');
+        Route::put('/partidos/{id}', [App\Http\Controllers\PartidoController::class, 'update'])->name('jugador.partidos.update');
     });
 
     Route::get('/partidos/disponibles', [App\Http\Controllers\PartidoController::class, 'disponibles'])->name('partidos.disponibles');

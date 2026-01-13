@@ -17,6 +17,8 @@ class Partido extends Model
         'cupos_totales',
         'cupos_suplentes',
         'costo',
+        'con_arbitro',
+        'costo_por_jugador',
         'estado',
         'creador_id',
     ];
@@ -26,7 +28,27 @@ class Partido extends Model
         return [
             'fecha_hora' => 'datetime',
             'costo' => 'decimal:2',
+            'costo_por_jugador' => 'decimal:2',
+            'con_arbitro' => 'boolean',
         ];
+    }
+
+    public function calcularCostoPorJugador()
+    {
+        $costoBase = $this->costo;
+
+        if ($this->con_arbitro) {
+            $costoBase += 100000;
+        }
+
+        $totalJugadores = $this->cupos_totales + $this->cupos_suplentes;
+
+        if ($totalJugadores > 0) {
+            $this->costo_por_jugador = $costoBase / $totalJugadores;
+            $this->save();
+        }
+
+        return $this->costo_por_jugador;
     }
 
     public function creador()

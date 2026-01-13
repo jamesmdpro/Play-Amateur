@@ -62,6 +62,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/perfil', [UserController::class, 'update']);
         Route::post('/perfil/foto', [UserController::class, 'uploadFoto']);
         Route::put('/perfil/password', [UserController::class, 'updatePassword']);
+
+        Route::get('/partidos/creados', [PartidoController::class, 'partidosCreados']);
+        Route::get('/partidos/enMarcha', [PartidoController::class, 'partidosEnMarcha']);
+        Route::get('/partidos/finalizados', [PartidoController::class, 'partidosFinalizados']);
+        Route::post('/partidos/{id}/cancelar', [PartidoController::class, 'cancelarPartido']);
     });
 
     Route::get('/partidos/disponibles', [PartidoController::class, 'disponibles']);

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Jugador Dashboard')</title>
+    <title>@yield('title', 'Cancha Dashboard')</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
@@ -205,25 +205,25 @@
         <nav class="sidebar-menu">
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('jugador.dashboard') ? 'active' : '' }}" href="{{ route('jugador.dashboard') }}">
+                    <a class="nav-link {{ request()->routeIs('cancha.dashboard') ? 'active' : '' }}" href="{{ route('cancha.dashboard') }}">
                         <i class="bi bi-speedometer2"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('jugador.perfil') ? 'active' : '' }}" href="{{ route('jugador.perfil') }}">
+                    <a class="nav-link {{ request()->routeIs('cancha.perfil') ? 'active' : '' }}" href="{{ route('cancha.perfil') }}">
                         <i class="bi bi-person-circle"></i>
                         <span>Mi Perfil</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('jugador.crear-encuentro') ? 'active' : '' }}" href="{{ route('jugador.crear-encuentro') }}">
+                    <a class="nav-link {{ request()->routeIs('cancha.crear-encuentro') ? 'active' : '' }}" href="{{ route('cancha.crear-encuentro') }}">
                         <i class="bi bi-plus-circle-fill"></i>
                         <span>Crear Encuentro</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('jugador.partidos') ? 'active' : '' }}" href="{{ route('jugador.partidos') }}">
+                    <a class="nav-link {{ request()->routeIs('cancha.partidos') ? 'active' : '' }}" href="{{ route('cancha.partidos') }}">
                         <i class="bi bi-trophy-fill"></i>
                         <span>Partidos</span>
                     </a>

@@ -2,6 +2,8 @@
 
 @section('title', 'Registro')
 
+@section('body-class', 'auth-page')
+
 @section('content')
 <div class="auth-container">
     <div class="auth-card">
