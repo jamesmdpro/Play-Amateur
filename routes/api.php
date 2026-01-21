@@ -27,6 +27,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/partidos/{id}', [PartidoController::class, 'update']);
     Route::delete('/partidos/{id}', [PartidoController::class, 'destroy']);
     Route::post('/partidos/{id}/generar-equipos', [PartidoController::class, 'generarEquipos']);
+    Route::get('/partidos/disponibles', [PartidoController::class, 'partidosDisponibles']);
+    Route::get('/partidos/requieren-arbitro', [PartidoController::class, 'partidosRequierenArbitro']);
+    Route::post('/partidos/{id}/aplicar-arbitro', [PartidoController::class, 'aplicarArbitro']);
+    Route::post('/partidos/{id}/inscribirse', [PartidoController::class, 'inscribirse']);
+    Route::get('/partidos/mis-partidos', [PartidoController::class, 'misPartidos']);
 
     Route::prefix('wallet')->group(function () {
         Route::get('/', [WalletController::class, 'index']);
@@ -69,6 +74,4 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/partidos/{id}/cancelar', [PartidoController::class, 'cancelarPartido']);
     });
 
-    Route::get('/partidos/disponibles', [PartidoController::class, 'disponibles']);
-    Route::post('/partidos/{id}/inscribir', [InscripcionController::class, 'inscribirse']);
 });

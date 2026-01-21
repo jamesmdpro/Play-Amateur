@@ -21,6 +21,7 @@ class Partido extends Model
         'costo_por_jugador',
         'estado',
         'creador_id',
+        'arbitro_id',
     ];
 
     protected function casts(): array
@@ -54,6 +55,11 @@ class Partido extends Model
     public function creador()
     {
         return $this->belongsTo(User::class, 'creador_id');
+    }
+
+    public function arbitro()
+    {
+        return $this->belongsTo(User::class, 'arbitro_id');
     }
 
     public function inscripciones()

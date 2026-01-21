@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Partido;
 use App\Models\Inscripcion;
+use App\Models\Notificacion;
 use Illuminate\Http\Request;
 
 class PartidoController extends Controller
@@ -38,7 +39,7 @@ class PartidoController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isAdmin() && !$user->isCancha()) {
+        if (!$user->isAdmin() && !$user->isCancha() && !$user->isJugador() && !$user->isArbitro()) {
             return response()->json(['message' => 'No autorizado'], 403);
         }
 
@@ -66,6 +67,8 @@ class PartidoController extends Controller
         ]);
 
         $partido->calcularCostoPorJugador();
+
+        Notificacion::notificarNuevoPartido($partido);
 
         return response()->json([
             'message' => 'Partido creado exitosamente',
@@ -112,15 +115,23 @@ class PartidoController extends Controller
 
     public function inscribirse(Request $request, $id)
     {
+        $request->validate([
+            'equipo' => 'required|integer|in:1,2',
+        ]);
+
         $partido = Partido::findOrFail($id);
         $user = $request->user();
 
         if (!$user->isJugador()) {
-            return response()->json(['message' => 'Solo los jugadores pueden inscribirse'], 403);
+            return response()->json(['success' => false, 'message' => 'Solo los jugadores pueden inscribirse'], 403);
         }
 
         if ($partido->estado !== 'abierto') {
-            return response()->json(['message' => 'El partido no está abierto para inscripciones'], 400);
+            return response()->json(['success' => false, 'message' => 'El partido no está abierto para inscripciones'], 400);
+        }
+
+        if ($user->tieneSancionActiva()) {
+            return response()->json(['success' => false, 'message' => 'Tienes una sanción activa'], 403);
         }
 
         $yaInscrito = Inscripcion::where('partido_id', $partido->id)
@@ -128,68 +139,70 @@ class PartidoController extends Controller
             ->exists();
 
         if ($yaInscrito) {
-            return response()->json(['message' => 'Ya estás inscrito en este partido'], 400);
+            return response()->json(['success' => false, 'message' => 'Ya estás inscrito en este partido'], 400);
         }
 
-        if ($user->saldo < $partido->costo_por_jugador) {
-            return response()->json(['message' => 'Saldo insuficiente'], 400);
+        if ($user->wallet < $partido->costo_por_jugador) {
+            return response()->json(['success' => false, 'message' => 'Saldo insuficiente'], 400);
         }
 
         $cuposDisponibles = $partido->cuposDisponibles();
         $cuposSuplentesDisponibles = $partido->cuposSuplentesDisponibles();
 
+        $cuposPorEquipo = $partido->cupos_totales / 2;
+        $inscritosEnEquipo = Inscripcion::where('partido_id', $partido->id)
+            ->where('equipo', $request->equipo)
+            ->where('es_suplente', false)
+            ->count();
+
         $esSuplente = false;
 
-        if ($cuposDisponibles <= 0) {
+        if ($inscritosEnEquipo >= $cuposPorEquipo) {
             if ($cuposSuplentesDisponibles <= 0) {
-                return response()->json(['message' => 'No hay cupos disponibles'], 400);
+                return response()->json(['success' => false, 'message' => 'No hay cupos disponibles'], 400);
             }
             $esSuplente = true;
         }
 
-        $user->saldo -= $partido->costo_por_jugador;
+        if (!$esSuplente && $cuposDisponibles <= 0) {
+            if ($cuposSuplentesDisponibles <= 0) {
+                return response()->json(['success' => false, 'message' => 'No hay cupos disponibles'], 400);
+            }
+            $esSuplente = true;
+        }
+
+        $saldo_anterior = $user->wallet;
+        $user->wallet -= $partido->costo_por_jugador;
         $user->save();
 
         \App\Models\WalletTransaction::create([
             'user_id' => $user->id,
-            'tipo' => 'retiro',
+            'tipo' => 'pago_partido',
             'monto' => $partido->costo_por_jugador,
-            'descripcion' => 'Inscripción al partido: ' . $partido->nombre,
+            'saldo_anterior' => $saldo_anterior,
+            'saldo_nuevo' => $user->wallet,
+            'partido_id' => $partido->id,
+            'estado' => 'aprobado',
+            'notas' => 'Inscripción al partido: ' . $partido->nombre,
         ]);
 
         $inscripcion = Inscripcion::create([
             'partido_id' => $partido->id,
             'jugador_id' => $user->id,
+            'equipo' => $request->equipo,
             'es_suplente' => $esSuplente,
+            'estado' => 'inscrito',
         ]);
 
         return response()->json([
+            'success' => true,
             'message' => $esSuplente ? 'Inscrito como suplente exitosamente' : 'Inscrito exitosamente',
             'inscripcion' => $inscripcion,
-            'saldo_restante' => $user->saldo,
+            'saldo_restante' => $user->wallet,
         ], 201);
     }
 
-    public function generarEquipos($id)
-    {
-        $partido = Partido::findOrFail($id);
-        $user = request()->user();
 
-        if (!$user->isAdmin() && !$user->isCancha() && $partido->creador_id !== $user->id) {
-            return response()->json(['message' => 'No autorizado'], 403);
-        }
-
-        $resultado = $partido->generarEquipos();
-
-        if (!$resultado) {
-            return response()->json(['message' => 'No hay suficientes jugadores para generar equipos'], 400);
-        }
-
-        return response()->json([
-            'message' => 'Equipos generados exitosamente',
-            'partido' => $partido->load('inscripciones.jugador'),
-        ]);
-    }
 
     public function update(Request $request, $id)
     {
@@ -423,5 +436,151 @@ class PartidoController extends Controller
             'success' => true,
             'message' => 'Partido cancelado exitosamente'
         ]);
+    }
+
+    public function partidosDisponibles()
+    {
+        $partidos = Partido::where('estado', 'abierto')
+            ->where('fecha_hora', '>', now())
+            ->with(['creador', 'inscripciones'])
+            ->orderBy('fecha_hora', 'asc')
+            ->get()
+            ->map(function ($partido) {
+                return [
+                    'id' => $partido->id,
+                    'nombre' => $partido->nombre,
+                    'descripcion' => $partido->descripcion,
+                    'fecha_hora' => $partido->fecha_hora,
+                    'ubicacion' => $partido->ubicacion,
+                    'cupos_totales' => $partido->cupos_totales,
+                    'cupos_disponibles' => $partido->cuposDisponibles(),
+                    'costo_por_jugador' => $partido->costo_por_jugador,
+                    'con_arbitro' => $partido->con_arbitro,
+                    'estado' => $partido->estado,
+                ];
+            });
+
+        return response()->json($partidos);
+    }
+
+    public function partidosRequierenArbitro()
+    {
+        $partidos = Partido::where('con_arbitro', true)
+            ->where('estado', 'abierto')
+            ->where('fecha_hora', '>', now())
+            ->whereNull('arbitro_id')
+            ->with(['creador', 'inscripciones'])
+            ->orderBy('fecha_hora', 'asc')
+            ->get()
+            ->map(function ($partido) {
+                return [
+                    'id' => $partido->id,
+                    'nombre' => $partido->nombre,
+                    'descripcion' => $partido->descripcion,
+                    'fecha_hora' => $partido->fecha_hora,
+                    'ubicacion' => $partido->ubicacion,
+                    'cupos_totales' => $partido->cupos_totales,
+                ];
+            });
+
+        return response()->json($partidos);
+    }
+
+    public function aplicarArbitro(Request $request, $id)
+    {
+        $partido = Partido::findOrFail($id);
+        $user = $request->user();
+
+        if (!$user->isArbitro()) {
+            return response()->json(['message' => 'Solo los árbitros pueden aplicar'], 403);
+        }
+
+        if (!$partido->con_arbitro) {
+            return response()->json(['message' => 'Este partido no requiere árbitro'], 400);
+        }
+
+        if ($partido->arbitro_id) {
+            return response()->json(['message' => 'Este partido ya tiene un árbitro asignado'], 400);
+        }
+
+        $partido->update(['arbitro_id' => $user->id]);
+
+        return response()->json([
+            'message' => 'Aplicación exitosa',
+            'partido' => $partido,
+        ]);
+    }
+
+    public function misPartidos()
+    {
+        $user = request()->user();
+
+        $partidos = Partido::where('creador_id', $user->id)
+            ->with(['inscripciones.jugador', 'arbitro'])
+            ->orderBy('fecha_hora', 'desc')
+            ->get()
+            ->map(function ($partido) {
+                $equipo1 = $partido->inscripciones->where('equipo', 1)->map(function ($inscripcion) {
+                    return [
+                        'id' => $inscripcion->jugador->id,
+                        'name' => $inscripcion->jugador->name,
+                        'posicion' => $inscripcion->jugador->posicion,
+                    ];
+                })->values();
+
+                $equipo2 = $partido->inscripciones->where('equipo', 2)->map(function ($inscripcion) {
+                    return [
+                        'id' => $inscripcion->jugador->id,
+                        'name' => $inscripcion->jugador->name,
+                        'posicion' => $inscripcion->jugador->posicion,
+                    ];
+                })->values();
+
+                $suplentes = $partido->inscripciones->where('es_suplente', true)->map(function ($inscripcion) {
+                    return [
+                        'id' => $inscripcion->jugador->id,
+                        'name' => $inscripcion->jugador->name,
+                        'posicion' => $inscripcion->jugador->posicion,
+                    ];
+                })->values();
+
+                return [
+                    'id' => $partido->id,
+                    'nombre' => $partido->nombre,
+                    'descripcion' => $partido->descripcion,
+                    'fecha_hora' => $partido->fecha_hora,
+                    'ubicacion' => $partido->ubicacion,
+                    'cupos_totales' => $partido->cupos_totales,
+                    'cupos_disponibles' => $partido->cuposDisponibles(),
+                    'inscritos_count' => $partido->inscripciones->count(),
+                    'con_arbitro' => $partido->con_arbitro,
+                    'arbitro' => $partido->arbitro,
+                    'equipos_generados' => $equipo1->count() > 0 || $equipo2->count() > 0,
+                    'equipo1' => $equipo1,
+                    'equipo2' => $equipo2,
+                    'suplentes' => $suplentes,
+                ];
+            });
+
+        return response()->json($partidos);
+    }
+
+    public function generarEquipos($id)
+    {
+        $partido = Partido::findOrFail($id);
+        $user = request()->user();
+
+        if ($partido->creador_id !== $user->id && !$user->isAdmin()) {
+            return response()->json(['message' => 'No autorizado'], 403);
+        }
+
+        if ($partido->generarEquipos()) {
+            return response()->json([
+                'message' => 'Equipos generados exitosamente',
+                'partido' => $partido->load(['inscripciones.jugador']),
+            ]);
+        }
+
+        return response()->json(['message' => 'No hay suficientes jugadores para generar equipos'], 400);
     }
 }

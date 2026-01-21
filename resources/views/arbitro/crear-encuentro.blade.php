@@ -1,6 +1,6 @@
-@extends('layouts.jugador')
+@extends('layouts.arbitro')
 
-@section('title', 'Crear Encuentro - Jugador')
+@section('title', 'Crear Encuentro - Árbitro')
 
 @section('content')
 <style>
@@ -107,9 +107,9 @@
             </div>
             <div class="col-12 mb-3">
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="con_arbitro" id="conArbitro">
+                    <input class="form-check-input" type="checkbox" name="con_arbitro" id="conArbitro" checked disabled>
                     <label class="form-check-label" for="conArbitro">
-                        Incluir Árbitro (+$100,000)
+                        Incluir Árbitro (Yo seré el árbitro de este partido)
                     </label>
                 </div>
             </div>
@@ -144,7 +144,7 @@ document.getElementById('formCrearPartido').addEventListener('submit', async fun
         costo: parseFloat(formData.get('costo')),
         estado_inicial: formData.get('estado_inicial'),
         nivel: formData.get('nivel'),
-        con_arbitro: formData.get('con_arbitro') === 'on'
+        con_arbitro: true
     };
     
     try {
@@ -160,7 +160,7 @@ document.getElementById('formCrearPartido').addEventListener('submit', async fun
         
         if (response.ok) {
             alert('Partido creado exitosamente');
-            window.location.href = '{{ route("jugador.partidos") }}';
+            window.location.href = '{{ route("arbitro.partidos") }}';
         } else {
             alert('Error al crear el partido');
         }

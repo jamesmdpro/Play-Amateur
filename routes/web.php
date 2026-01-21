@@ -32,22 +32,6 @@ Route::middleware(['auth'])->group(function () {
         return view('cancha.dashboard');
     })->name('cancha.dashboard')->middleware('role:cancha');
 
-    Route::prefix('cancha')->middleware('role:cancha')->group(function () {
-        Route::get('/perfil', function () {
-            return view('cancha.perfil');
-        })->name('cancha.perfil');
-
-        Route::get('/crear-encuentro', function () {
-            return view('cancha.crear-encuentro');
-        })->name('cancha.crear-encuentro');
-
-        Route::get('/partidos', function () {
-            return view('cancha.partidos');
-        })->name('cancha.partidos');
-
-        Route::post('/partidos/store', [App\Http\Controllers\PartidoController::class, 'storeFromCancha'])->name('cancha.partidos.store');
-    });
-
     Route::get('/arbitro/dashboard', function () {
         return view('arbitro.dashboard');
     })->name('arbitro.dashboard')->middleware('role:arbitro');
@@ -75,10 +59,48 @@ Route::middleware(['auth'])->group(function () {
             return view('jugador.partidos');
         })->name('jugador.partidos');
 
+        Route::get('/partidos-disponibles', function () {
+            return view('jugador.partidos-disponibles');
+        })->name('jugador.partidos-disponibles');
+
         Route::post('/partidos/store', [App\Http\Controllers\PartidoController::class, 'storeFromJugador'])->name('jugador.partidos.store');
         Route::get('/partidos/{id}', [App\Http\Controllers\PartidoController::class, 'show'])->name('jugador.partidos.show');
         Route::get('/partidos/{id}/editar', [App\Http\Controllers\PartidoController::class, 'edit'])->name('jugador.partidos.edit');
         Route::put('/partidos/{id}', [App\Http\Controllers\PartidoController::class, 'update'])->name('jugador.partidos.update');
+    });
+
+    Route::prefix('arbitro')->middleware('role:arbitro')->group(function () {
+        Route::get('/crear-encuentro', function () {
+            return view('arbitro.crear-encuentro');
+        })->name('arbitro.crear-encuentro');
+
+        Route::get('/partidos', function () {
+            return view('arbitro.partidos');
+        })->name('arbitro.partidos');
+
+        Route::get('/partidos-disponibles', function () {
+            return view('arbitro.partidos-disponibles');
+        })->name('arbitro.partidos-disponibles');
+    });
+
+    Route::prefix('cancha')->middleware('role:cancha')->group(function () {
+        Route::get('/perfil', function () {
+            return view('cancha.perfil');
+        })->name('cancha.perfil');
+
+        Route::get('/crear-encuentro', function () {
+            return view('cancha.crear-encuentro');
+        })->name('cancha.crear-encuentro');
+
+        Route::get('/partidos', function () {
+            return view('cancha.partidos');
+        })->name('cancha.partidos');
+
+        Route::get('/equipos-conformados', function () {
+            return view('cancha.equipos-conformados');
+        })->name('cancha.equipos-conformados');
+
+        Route::post('/partidos/store', [App\Http\Controllers\PartidoController::class, 'storeFromCancha'])->name('cancha.partidos.store');
     });
 
     Route::get('/partidos/disponibles', [App\Http\Controllers\PartidoController::class, 'disponibles'])->name('partidos.disponibles');
