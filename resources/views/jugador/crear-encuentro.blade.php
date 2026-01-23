@@ -39,7 +39,7 @@
 <div class="form-card">
     <h3><i class="bi bi-plus-circle me-2"></i>Crear Nuevo Encuentro</h3>
     
-    <form id="formCrearPartido">
+    <form id="formCrearPartido" action="{{ route('jugador.partidos.store') }}" method="POST">
         @csrf
         <div class="row">
             <div class="col-md-6 mb-3">
@@ -55,7 +55,10 @@
                 <select class="form-select" name="tipo_partido">
                     <option value="">Seleccionar...</option>
                     <option value="5vs5">5 vs 5</option>
+                    <option value="6vs6">6 vs 6</option>
                     <option value="7vs7">7 vs 7</option>
+                    <option value="8vs8">8 vs 8</option>
+                    <option value="9vs9">9 vs 9</option>
                     <option value="11vs11">11 vs 11</option>
                 </select>
             </div>
@@ -65,7 +68,14 @@
             </div>
             <div class="col-md-3 mb-3">
                 <label class="form-label">Hora *</label>
-                <input type="time" class="form-control" name="hora" required>
+                <select name="hora" class="form-control" required>
+                    @for ($h = 6; $h <= 23; $h++)
+                        <option value="{{ sprintf('%02d:00', $h) }}">
+                            {{ sprintf('%02d:00', $h) }}
+                            ({{ \Carbon\Carbon::createFromTime($h)->format('g:i A') }})
+                        </option>
+                    @endfor
+                </select>
             </div>
             <div class="col-md-12 mb-3">
                 <label class="form-label">Descripción</label>
@@ -123,51 +133,5 @@
     </form>
 </div>
 
-<script>
-document.getElementById('formCrearPartido').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const fecha = formData.get('fecha');
-    const hora = formData.get('hora');
-    const fecha_hora = `${fecha} ${hora}:00`;
-    
-    const data = {
-        nombre: formData.get('nombre'),
-        descripcion: formData.get('descripcion'),
-        ciudad: formData.get('ciudad'),
-        tipo_partido: formData.get('tipo_partido'),
-        fecha_hora: fecha_hora,
-        ubicacion: formData.get('ubicacion'),
-        cupos_totales: parseInt(formData.get('cupos_totales')),
-        cupos_suplentes: parseInt(formData.get('cupos_suplentes')),
-        costo: parseFloat(formData.get('costo')),
-        estado_inicial: formData.get('estado_inicial'),
-        nivel: formData.get('nivel'),
-        con_arbitro: formData.get('con_arbitro') === 'on'
-    };
-    
-    try {
-        const response = await fetch('/api/partidos', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem('token'),
-                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-            },
-            body: JSON.stringify(data)
-        });
-        
-        if (response.ok) {
-            alert('Partido creado exitosamente');
-            window.location.href = '{{ route("jugador.partidos") }}';
-        } else {
-            alert('Error al crear el partido');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Error al crear el partido');
-    }
-});
-</script>
+
 @endsection

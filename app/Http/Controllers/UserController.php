@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -131,13 +132,13 @@ class UserController extends Controller
 
         $partidosJugados = \DB::table('inscripciones')
             ->join('partidos', 'inscripciones.partido_id', '=', 'partidos.id')
-            ->where('inscripciones.user_id', $user->id)
+            ->where('inscripciones.jugador_id', $user->id)
             ->where('partidos.estado', 'finalizado')
             ->count();
 
         $partidosDisponibles = \DB::table('partidos')
             ->where('estado', 'abierto')
-            ->whereDate('fecha', '>=', now())
+            ->whereDate('fecha_hora', '>=', now())
             ->count();
 
         $tarjetasAmarillas = \DB::table('sanciones')

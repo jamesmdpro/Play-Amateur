@@ -7,6 +7,7 @@ use App\Models\Partido;
 use App\Models\Sancion;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class InscripcionController extends Controller
 {
@@ -16,7 +17,15 @@ class InscripcionController extends Controller
             'equipo' => 'nullable|in:A,B',
         ]);
 
-        $user = $request->user();
+        // Cambiar de $request->user() a auth()->user()
+        $user = auth()->user();
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Usuario no autenticado'
+            ], 401);
+        }
         $partido = Partido::findOrFail($partidoId);
 
         if ($user->tieneSancionActiva()) {
@@ -28,6 +37,7 @@ class InscripcionController extends Controller
             ], 403);
         }
 
+        // Verificar si ya está inscrito
         $inscripcionExistente = Inscripcion::where('partido_id', $partidoId)
             ->where('jugador_id', $user->id)
             ->first();
@@ -39,7 +49,17 @@ class InscripcionController extends Controller
             ], 400);
         }
 
-        $equipo = $request->input('equipo', 'A');
+        // Validar saldo antes de inscribirse
+        if ($user->wallet < $partido->costo_por_jugador) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Saldo insuficiente. Necesitas $' . number_format($partido->costo_por_jugador, 0) . ' y tienes $' . number_format($user->wallet, 0)
+            ], 400);
+        }
+
+        $equipoLetra = $request->input('equipo', 'A');
+        $equipo = ($equipoLetra === 'A') ? 1 : 2;
+        
         $jugadoresEquipo = Inscripcion::where('partido_id', $partidoId)
             ->where('equipo', $equipo)
             ->where('es_suplente', false)
@@ -47,19 +67,35 @@ class InscripcionController extends Controller
 
         $esSuplente = $jugadoresEquipo >= ($partido->jugadores_por_equipo ?? 7);
 
-        $inscripcion = Inscripcion::create([
-            'partido_id' => $partidoId,
-            'jugador_id' => $user->id,
-            'equipo' => $equipo,
-            'es_suplente' => $esSuplente,
-            'estado' => 'inscrito',
-        ]);
+        try {
+            DB::beginTransaction();
 
-        return response()->json([
-            'success' => true,
-            'message' => $esSuplente ? 'Te has inscrito como suplente' : 'Te has inscrito exitosamente',
-            'inscripcion' => $inscripcion,
-        ], 201);
+            $inscripcion = Inscripcion::create([
+                'partido_id' => $partidoId,
+                'jugador_id' => $user->id,
+                'equipo' => $equipo,
+                'es_suplente' => $esSuplente,
+                'estado' => 'inscrito',
+            ]);
+
+            // El descuento se maneja en el evento created del modelo Inscripcion
+            // que está en AppServiceProvider
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Inscripción exitosa',
+                'inscripcion' => $inscripcion->load(['partido', 'user'])
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400);
+        }
     }
 
     public function confirmarPago(Request $request, $inscripcionId)
@@ -167,7 +203,7 @@ class InscripcionController extends Controller
                 'es_suplente' => false,
             ]);
 
-            $suplente->jugador->notificaciones()->create([
+            $suplente->user->notificaciones()->create([
                 'tipo' => 'asignacion_suplente',
                 'titulo' => 'Asignado como Titular',
                 'mensaje' => 'Has sido asignado como titular en el partido. Confirma tu pago para asegurar tu cupo.',
@@ -200,6 +236,7 @@ class InscripcionController extends Controller
                     'partido' => $inscripcion->partido->nombre ?? 'N/A',
                     'fecha' => $inscripcion->partido->fecha_hora->format('d/m/Y H:i'),
                     'cancha' => $inscripcion->partido->ubicacion ?? 'N/A',
+                    'equipo' => $inscripcion->equipo == 1 ? 'A' : 'B',
                     'estado' => ucfirst($inscripcion->estado),
                     'estado_color' => $estadoColor,
                 ];

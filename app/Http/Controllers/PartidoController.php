@@ -262,6 +262,7 @@ class PartidoController extends Controller
                     'fecha' => $partido->fecha_hora->format('d/m/Y H:i'),
                     'cancha' => $partido->ubicacion,
                     'costo' => $partido->costo,
+                    'costo_por_jugador' => '$' . number_format($partido->costo_por_jugador, 0, ',', '.'),
                     'cupos_disponibles' => $partido->cuposDisponibles(),
                 ];
             });
@@ -278,17 +279,18 @@ class PartidoController extends Controller
 
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'tipo' => 'required|string',
-            'fecha' => 'required|date|after:today',
-            'hora' => 'required',
+            'tipo_partido' => 'nullable|string',
+            'fecha' => 'required|date',
+            'hora' => 'required|regex:/^\d{2}:\d{2}$/',
             'descripcion' => 'nullable|string',
             'ubicacion' => 'required|string|max:255',
             'ciudad' => 'required|string|max:100',
-            'jugadores_por_equipo' => 'required|integer|min:5',
-            'max_jugadores' => 'required|integer|min:10',
+            'cupos_totales' => 'required|integer|min:2',
+            'cupos_suplentes' => 'nullable|integer|min:0',
             'costo' => 'required|numeric|min:0',
-            'estado' => 'nullable|string',
+            'estado_inicial' => 'nullable|string',
             'nivel' => 'nullable|string',
+            'con_arbitro' => 'nullable',
         ]);
 
         $fechaHora = $request->fecha . ' ' . $request->hora;
@@ -298,18 +300,61 @@ class PartidoController extends Controller
             'descripcion' => $request->descripcion,
             'fecha_hora' => $fechaHora,
             'ubicacion' => $request->ubicacion . ', ' . $request->ciudad,
-            'cupos_totales' => $request->max_jugadores,
-            'cupos_suplentes' => 0,
+            'cupos_totales' => $request->cupos_totales,
+            'cupos_suplentes' => $request->cupos_suplentes ?? 0,
             'costo' => $request->costo,
+            'con_arbitro' => $request->con_arbitro === 'on',
             'creador_id' => $user->id,
-            'estado' => $request->estado ?? 'abierto',
+            'estado' => $request->estado_inicial ?? 'abierto',
         ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Partido creado exitosamente',
-            'partido' => $partido,
-        ], 201);
+        $partido->calcularCostoPorJugador();
+
+        Notificacion::notificarNuevoPartido($partido);
+
+        return redirect()->route('jugador.partidos')->with('success', 'Partido creado exitosamente');
+    }
+
+    public function storeFromCancha(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'tipo_partido' => 'nullable|string',
+            'fecha' => 'required|date',
+            'hora' => 'required|regex:/^\d{2}:\d{2}$/',
+            'descripcion' => 'nullable|string',
+            'ubicacion' => 'required|string|max:255',
+            'ciudad' => 'required|string|max:100',
+            'cupos_totales' => 'required|integer|min:2',
+            'cupos_suplentes' => 'nullable|integer|min:0',
+            'costo' => 'required|numeric|min:0',
+            'estado_inicial' => 'nullable|string',
+            'nivel' => 'nullable|string',
+            'con_arbitro' => 'nullable',
+        ]);
+
+        $fechaHora = $request->fecha . ' ' . $request->hora;
+
+        $partido = Partido::create([
+            'nombre' => $request->nombre,
+            'descripcion' => $request->descripcion,
+            'fecha_hora' => $fechaHora,
+            'ubicacion' => $request->ubicacion . ', ' . $request->ciudad,
+            'cupos_totales' => $request->cupos_totales,
+            'cupos_suplentes' => $request->cupos_suplentes ?? 0,
+            'costo' => $request->costo,
+            'con_arbitro' => $request->con_arbitro === 'on',
+            'creador_id' => $user->id,
+            'estado' => $request->estado_inicial ?? 'abierto',
+        ]);
+
+        $partido->calcularCostoPorJugador();
+
+        Notificacion::notificarNuevoPartido($partido);
+
+        return redirect()->route('cancha.partidos')->with('success', 'Partido creado exitosamente');
     }
 
     public function edit($id)

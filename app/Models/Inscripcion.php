@@ -31,7 +31,7 @@ class Inscripcion extends Model
         return $this->belongsTo(Partido::class);
     }
 
-    public function jugador()
+    public function user()
     {
         return $this->belongsTo(User::class, 'jugador_id');
     }

@@ -442,6 +442,11 @@
                                             <i class="bi bi-cash-coin me-2" style="color: #2d8659;"></i>
                                             <strong style="color: #1a5f3f; font-size: 1.1rem;">$${partido.costo}</strong>
                                         </p>
+                                        <p class="mb-0">
+                                            <i class="bi bi-cash-coin me-2" style="color: #2d8659;"></i>
+                                            <strong style="color: #1a5f3f; font-size: 1.1rem;">${partido.costo_por_jugador}</strong>
+                                            <small class="text-muted ms-1">por jugador</small>
+                                        </p>
                                     </div>
                                     <button class="btn btn-inscribir w-100" onclick="inscribirPartido(${partido.id})">
                                         <i class="bi bi-check-circle me-2"></i>Inscribirse

@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('partido_id')->nullable()->constrained('partidos')->onDelete('cascade');
+            $table->string('tipo');
             $table->integer('numero_sancion')->default(1);
             $table->integer('dias_suspension');
             $table->date('fecha_inicio');

@@ -24,7 +24,8 @@ class PartidoSeeder extends Seeder
             'ubicacion' => 'Cancha Central - Buenos Aires',
             'cupos_totales' => 14,
             'cupos_suplentes' => 4,
-            'costo' => 150.00,
+            'costo' => 150000.00,
+            'costo_por_jugador' => 150000 / 14,
             'estado' => 'abierto',
             'creador_id' => $cancha->id,
         ]);
@@ -36,7 +37,8 @@ class PartidoSeeder extends Seeder
             'ubicacion' => 'Complejo Deportivo Norte',
             'cupos_totales' => 14,
             'cupos_suplentes' => 2,
-            'costo' => 200.00,
+            'costo' => 200000.00,
+            'costo_por_jugador' => 200000 / 14,
             'estado' => 'abierto',
             'creador_id' => $admin->id,
         ]);
@@ -48,7 +50,8 @@ class PartidoSeeder extends Seeder
             'ubicacion' => 'Cancha Sintética Sur',
             'cupos_totales' => 10,
             'cupos_suplentes' => 2,
-            'costo' => 120.00,
+            'costo' => 210000.00,
+            'costo_por_jugador' => 210000 / 10,
             'estado' => 'abierto',
             'creador_id' => $cancha->id,
         ]);
@@ -60,7 +63,8 @@ class PartidoSeeder extends Seeder
             'ubicacion' => 'Cancha Central - Buenos Aires',
             'cupos_totales' => 16,
             'cupos_suplentes' => 4,
-            'costo' => 180.00,
+            'costo' => 240000.00,
+            'costo_por_jugador' => 240000 / 16,
             'estado' => 'abierto',
             'creador_id' => $admin->id,
         ]);
