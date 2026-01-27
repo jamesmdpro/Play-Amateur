@@ -55,18 +55,18 @@ Route::middleware(['auth'])->group(function () {
             return view('jugador.crear-encuentro');
         })->name('jugador.crear-encuentro');
 
-        Route::get('/partidos', function () {
-            return view('jugador.partidos');
-        })->name('jugador.partidos');
-
+        
         Route::get('/partidos-disponibles', function () {
             return view('jugador.partidos-disponibles');
         })->name('jugador.partidos-disponibles');
-
+        
         Route::post('/partidos/store', [App\Http\Controllers\PartidoController::class, 'storeFromJugador'])->name('jugador.partidos.store');
         Route::get('/partidos/{id}', [App\Http\Controllers\PartidoController::class, 'show'])->name('jugador.partidos.show');
         Route::get('/partidos/{id}/editar', [App\Http\Controllers\PartidoController::class, 'edit'])->name('jugador.partidos.edit');
         Route::put('/partidos/{id}', [App\Http\Controllers\PartidoController::class, 'update'])->name('jugador.partidos.update');
+        
+        Route::get('/partidos', [App\Http\Controllers\PartidoController::class, 'indexWeb'])->name('jugador.partidos');
+        
     });
 
     Route::prefix('arbitro')->middleware('role:arbitro')->group(function () {

@@ -369,6 +369,81 @@ class PartidoController extends Controller
         return view('jugador.editar-partido', compact('partido'));
     }
 
+    public function indexWeb()
+    {
+        $user = auth()->user();
+
+        // Obtener partidos creados (abiertos y cerrados, pero no finalizados ni en curso)
+        $partidosCreados = Partido::where('creador_id', $user->id)
+            ->where('estado', '!=', 'finalizado')
+            ->where('estado', '!=', 'en_curso')
+            ->with(['inscripciones'])
+            ->orderBy('fecha_hora', 'desc')
+            ->get()
+            ->map(function ($partido) use ($user) {
+                return [
+                    'id' => $partido->id,
+                    'nombre' => $partido->nombre,
+                    'fecha_formateada' => $partido->fecha_hora->format('d/m/Y'),
+                    'hora' => $partido->fecha_hora->format('H:i'),
+                    'ubicacion' => $partido->ubicacion,
+                    'costo' => number_format($partido->costo, 0),
+                    'max_jugadores' => $partido->cupos_totales,
+                    'inscritos' => $partido->inscripciones->count(),
+                    'estado' => $partido->estado,
+                    'estado_texto' => ucfirst(str_replace('_', ' ', $partido->estado)),
+                    'puede_editar' => $partido->creador_id === $user->id,
+                ];
+            });
+
+        // Obtener partidos en marcha
+        $partidosEnMarcha = Partido::where('creador_id', $user->id)
+            ->where('estado', 'en_curso')
+            ->with(['inscripciones'])
+            ->orderBy('fecha_hora', 'desc')
+            ->get()
+            ->map(function ($partido) use ($user) {
+                return [
+                    'id' => $partido->id,
+                    'nombre' => $partido->nombre,
+                    'fecha_formateada' => $partido->fecha_hora->format('d/m/Y'),
+                    'hora' => $partido->fecha_hora->format('H:i'),
+                    'ubicacion' => $partido->ubicacion,
+                    'costo' => number_format($partido->costo, 0),
+                    'max_jugadores' => $partido->cupos_totales,
+                    'inscritos' => $partido->inscripciones->count(),
+                    'estado' => $partido->estado,
+                    'estado_texto' => 'En Marcha',
+                    'puede_editar' => false,
+                ];
+            });
+
+        // Obtener partidos finalizados
+        $partidosFinalizados = Partido::where('creador_id', $user->id)
+            ->where('estado', 'finalizado')
+            ->with(['inscripciones'])
+            ->orderBy('fecha_hora', 'desc')
+            ->get()
+            ->map(function ($partido) use ($user) {
+                return [
+                    'id' => $partido->id,
+                    'nombre' => $partido->nombre,
+                    'fecha_formateada' => $partido->fecha_hora->format('d/m/Y'),
+                    'hora' => $partido->fecha_hora->format('H:i'),
+                    'ubicacion' => $partido->ubicacion,
+                    'costo' => number_format($partido->costo, 0),
+                    'max_jugadores' => $partido->cupos_totales,
+                    'inscritos' => $partido->inscripciones->count(),
+                    'estado' => $partido->estado,
+                    'estado_texto' => 'Finalizado',
+                    'puede_editar' => false,
+                ];
+            });
+
+        return view('jugador.partidos', compact('partidosCreados', 'partidosEnMarcha', 'partidosFinalizados'));
+    }
+
+
     public function partidosCreados()
     {
         $user = request()->user();

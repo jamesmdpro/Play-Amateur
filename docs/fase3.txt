@@ -3,7 +3,7 @@
 Objetivo: convertir el partido en un evento completo con datos reales.
 
 Incluye:
-1) Director Técnico (DT)
+1) Director Técnico (DT) 
 
 Panel para revisar equipos
 
@@ -17,9 +17,9 @@ Si no hay DT → el sistema asigna uno de forma automática (roles voluntarios)
 
 Panel del árbitro
 
-Confirmar presencia
+Confirmar presencia "debe inscribirse en el partido que seleccione y que cumpla con los requisitos" que se haya programado con arbitro
 
-Registrar:
+Registrar: al final del partido
 
 goles
 
@@ -29,7 +29,8 @@ Enviar resultado final
 
 3) Validación
 
-2 jugadores de cada equipo deben confirmar el marcador
+2 jugadores de cada equipo deben confirmar el marcador se le enviara a dos jugadores de la platilla luego de que el arbitro envie su marcador estos
+deben confirmar el marcador o rechazarlo si se rechaza deben anexar una descripcion  
 
 4) Estadísticas
 
@@ -41,7 +42,13 @@ goles
 
 tarjetas
 
-calificaciones
+calificaciones las pueden generar los mismos integratenes y rivales caracteristicas basicas  
+Comportamiento competitivo
+Toma de decisiones
+Impacto en el resultado
+Capacidad defensiva
+Eficacia
+Participación en el juego
 
 posición más usada
 

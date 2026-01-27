@@ -191,6 +191,9 @@
     }
 </style>
 
+{{-- =========================
+    HEADER
+========================= --}}
 <div class="partidos-header">
     <div class="d-flex justify-content-between align-items-center">
         <div>
@@ -203,136 +206,136 @@
     </div>
 </div>
 
+{{-- =========================
+    TABS
+========================= --}}
 <div class="tabs-container">
-    <ul class="nav nav-tabs" id="partidosTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="creados-tab" data-bs-toggle="tab" data-bs-target="#creados" type="button">
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#creados">
                 <i class="bi bi-calendar-plus me-2"></i>Partidos Creados
             </button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="en-marcha-tab" data-bs-toggle="tab" data-bs-target="#en-marcha" type="button">
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#en-marcha">
                 <i class="bi bi-play-circle me-2"></i>En Marcha
             </button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="finalizados-tab" data-bs-toggle="tab" data-bs-target="#finalizados" type="button">
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#finalizados">
                 <i class="bi bi-check-circle me-2"></i>Finalizados
             </button>
         </li>
     </ul>
 
-    <div class="tab-content mt-4" id="partidosTabContent">
-        <div class="tab-pane fade show active" id="creados" role="tabpanel">
-            <div id="partidosCreados">
-                <div class="text-center py-5">
-                    <div class="spinner-border text-success" role="status">
-                        <span class="visually-hidden">Cargando...</span>
+    <div class="tab-content mt-4">
+
+        {{-- =========================
+            PARTIDOS CREADOS
+        ========================= --}}
+        <div class="tab-pane fade show active" id="creados">
+            @forelse($partidosCreados as $partido)
+                <div class="partido-item">
+                    <div class="partido-header">
+                        <div>
+                            <h4 class="partido-title">{{ $partido['nombre'] }}</h4>
+                            <br>
+                            <span class="badge-estado badge-{{ $partido['estado'] }}">
+                                {{ $partido['estado_texto'] }}
+                            </span>
+                        </div>
+
+                        <div class="jugadores-count">
+                            <i class="bi bi-people-fill"></i>
+                            {{ $partido['inscritos'] }}/{{ $partido['max_jugadores'] }}
+                        </div>
+                    </div>
+
+                    <div class="partido-info">
+                        <div class="info-item">
+                            <i class="bi bi-calendar3"></i>
+                            {{ $partido['fecha_formateada'] }}
+                        </div>
+                        <div class="info-item">
+                            <i class="bi bi-clock"></i>
+                            {{ $partido['hora'] }}
+                        </div>
+                        <div class="info-item">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            {{ $partido['ubicacion'] }}
+                        </div>
+                        <div class="info-item">
+                            <i class="bi bi-cash"></i>
+                            ${{ $partido['costo'] }}
+                        </div>
+                    </div>
+
+                    <div class="partido-actions">
+                        <a href="{{ route('jugador.partidos.show', $partido['id']) }}"
+                           class="btn btn-action btn-ver">
+                            <i class="bi bi-eye me-1"></i>Ver Detalles
+                        </a>
+
+                        @if($partido['puede_editar'])
+                            <a href="{{ route('jugador.partidos.edit', $partido['id']) }}"
+                               class="btn btn-action btn-editar">
+                                <i class="bi bi-pencil me-1"></i>Editar
+                            </a>
+                        @endif
                     </div>
                 </div>
-            </div>
+            @empty
+                <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <h4>No hay partidos creados</h4>
+                </div>
+            @endforelse
         </div>
 
-        <div class="tab-pane fade" id="en-marcha" role="tabpanel">
-            <div id="partidosEnMarcha">
-                <div class="text-center py-5">
-                    <div class="spinner-border text-success" role="status">
-                        <span class="visually-hidden">Cargando...</span>
-                    </div>
+        {{-- =========================
+            EN MARCHA
+        ========================= --}}
+        <div class="tab-pane fade" id="en-marcha">
+            @forelse($partidosEnMarcha as $partido)
+                {{-- MISMO BLOQUE QUE ARRIBA --}}
+                <div class="partido-item">
+                    <h4 class="partido-title">{{ $partido['nombre'] }}</h4>
                 </div>
-            </div>
+            @empty
+                <div class="empty-state">
+                    <i class="bi bi-play-circle"></i>
+                    <h4>No hay partidos en marcha</h4>
+                </div>
+            @endforelse
         </div>
 
-        <div class="tab-pane fade" id="finalizados" role="tabpanel">
-            <div id="partidosFinalizados">
-                <div class="text-center py-5">
-                    <div class="spinner-border text-success" role="status">
-                        <span class="visually-hidden">Cargando...</span>
-                    </div>
+        {{-- =========================
+            FINALIZADOS
+        ========================= --}}
+        <div class="tab-pane fade" id="finalizados">
+            @forelse($partidosFinalizados as $partido)
+                <div class="partido-item">
+                    <h4 class="partido-title">{{ $partido['nombre'] }}</h4>
                 </div>
-            </div>
+            @empty
+                <div class="empty-state">
+                    <i class="bi bi-check-circle"></i>
+                    <h4>No hay partidos finalizados</h4>
+                </div>
+            @endforelse
         </div>
+
     </div>
 </div>
 
+@endsection
+
+{{-- =========================
+    JS DESHABILITADO
+========================= --}}
 @push('scripts')
 <script>
-    function cargarPartidos(tipo) {
-        const container = document.getElementById(`partidos${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`);
-        
-        fetch(`/api/jugador/partidos/${tipo}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.partidos.length > 0) {
-                    container.innerHTML = data.partidos.map(partido => `
-                        <div class="partido-item">
-                            <div class="partido-header">
-                                <div>
-                                    <h4 class="partido-title">${partido.nombre}</h4>
-                                    <span class="badge-estado badge-${partido.estado}">${partido.estado_texto}</span>
-                                </div>
-                                <div class="jugadores-count">
-                                    <i class="bi bi-people-fill"></i>
-                                    ${partido.inscritos}/${partido.max_jugadores}
-                                </div>
-                            </div>
-                            
-                            <div class="partido-info">
-                                <div class="info-item">
-                                    <i class="bi bi-calendar3"></i>
-                                    <span>${partido.fecha_formateada}</span>
-                                </div>
-                                <div class="info-item">
-                                    <i class="bi bi-clock"></i>
-                                    <span>${partido.hora}</span>
-                                </div>
-                                <div class="info-item">
-                                    <i class="bi bi-geo-alt-fill"></i>
-                                    <span>${partido.ubicacion}</span>
-                                </div>
-                                <div class="info-item">
-                                    <i class="bi bi-cash"></i>
-                                    <span>$${partido.costo}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="partido-actions">
-                                <button class="btn btn-action btn-ver" onclick="verPartido(${partido.id})">
-                                    <i class="bi bi-eye me-1"></i>Ver Detalles
-                                </button>
-                                ${partido.puede_editar ? `
-                                    <button class="btn btn-action btn-editar" onclick="editarPartido(${partido.id})">
-                                        <i class="bi bi-pencil me-1"></i>Editar
-                                    </button>
-                                    <button class="btn btn-action btn-cancelar" onclick="cancelarPartido(${partido.id})">
-                                        <i class="bi bi-x-circle me-1"></i>Cancelar
-                                    </button>
-                                ` : ''}
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="bi bi-inbox"></i>
-                            <h4>No hay partidos ${tipo === 'creados' ? 'creados' : tipo === 'enMarcha' ? 'en marcha' : 'finalizados'}</h4>
-                            <p>Cuando ${tipo === 'creados' ? 'crees' : 'tengas'} partidos, aparecerán aquí</p>
-                        </div>
-                    `;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="bi bi-exclamation-triangle"></i>
-                        <h4>Error al cargar partidos</h4>
-                        <p>Por favor intenta nuevamente</p>
-                    </div>
-                `;
-            });
-    }
-
+    /*
     function verPartido(id) {
         window.location.href = `/jugador/partidos/${id}`;
     }
@@ -377,6 +380,7 @@
             cargarPartidos('finalizados');
         });
     });
+    */
 </script>
 @endpush
-@endsection
+
