@@ -3,15 +3,6 @@
 Objetivo: convertir el partido en un evento completo con datos reales.
 
 Incluye:
-1) Director Técnico (DT) 
-
-Panel para revisar equipos
-
-Puede modificar posiciones
-
-Puede aprobar alineación final
-
-Si no hay DT → el sistema asigna uno de forma automática (roles voluntarios)
 
 2) Árbitro
 
