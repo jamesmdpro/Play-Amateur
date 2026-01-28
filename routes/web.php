@@ -74,9 +74,10 @@ Route::middleware(['auth'])->group(function () {
             return view('arbitro.crear-encuentro');
         })->name('arbitro.crear-encuentro');
 
-        Route::get('/partidos', function () {
-            return view('arbitro.partidos');
-        })->name('arbitro.partidos');
+        Route::get('/partidos', [App\Http\Controllers\ArbitroController::class, 'partidos'])->name('arbitro.partidos');
+        Route::post('/partidos/{id}/confirmar-presencia', [App\Http\Controllers\ArbitroController::class, 'confirmarPresencia'])->name('arbitro.confirmar-presencia');
+        Route::post('/partidos/{id}/registrar-resultado', [App\Http\Controllers\ArbitroController::class, 'registrarResultado'])->name('arbitro.registrar-resultado');
+        Route::get('/historial', [App\Http\Controllers\ArbitroController::class, 'historial'])->name('arbitro.historial');
 
         Route::get('/partidos-disponibles', function () {
             return view('arbitro.partidos-disponibles');
@@ -117,4 +118,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/notificaciones', function () {
         return view('notificaciones.index');
     })->name('notificaciones.index');
+
+    // Rutas para resultados
+    Route::get('/partidos/{id}/resultado', [App\Http\Controllers\ResultadoController::class, 'show'])->name('resultados.show');
+    Route::post('/resultados/{id}/validar', [App\Http\Controllers\ResultadoController::class, 'validarResultado'])->name('resultados.validar');
+
+    // Rutas para estadísticas
+    Route::get('/estadisticas/{id}', [App\Http\Controllers\EstadisticaController::class, 'show'])->name('estadisticas.show');
+
+    // Rutas para ratings
+    Route::get('/partidos/{id}/ratings', [App\Http\Controllers\RatingController::class, 'show'])->name('ratings.show');
+    Route::post('/ratings', [App\Http\Controllers\RatingController::class, 'store'])->name('ratings.store');
 });

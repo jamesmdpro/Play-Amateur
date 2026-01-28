@@ -61,6 +61,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/marcar-todas-leidas', [NotificacionController::class, 'marcarTodasComoLeidas']);
     });
 
+    Route::post('/ratings', [App\Http\Controllers\RatingController::class, 'store']);
+
     Route::prefix('jugador')->group(function () {
         Route::get('/estadisticas', [UserController::class, 'estadisticasJugador']);
         Route::get('/inscripciones', [InscripcionController::class, 'misInscripciones']);

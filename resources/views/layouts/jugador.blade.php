@@ -228,6 +228,12 @@
                         <span>Partidos</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('estadisticas.show') ? 'active' : '' }}" href="{{ route('estadisticas.show', auth()->id()) }}">
+                        <i class="bi bi-bar-chart-line-fill"></i>
+                        <span>Estadísticas</span>
+                    </a>
+                </li>
             </ul>
         </nav>
     </aside>

@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Partido;
 use App\Models\Inscripcion;
 use App\Models\Notificacion;
+use App\Models\Rating;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -556,5 +557,108 @@ class PartidoCompleteTest extends TestCase
         $this->assertEquals(2, $partido->inscripciones()->count());
         $this->assertEquals(8, $partido->cuposDisponibles());
         $this->assertEquals(10000, $partido->costo_por_jugador);
+    }
+
+    public function test_jugador_puede_calificar_dos_jugadores_maximo_por_partido()
+    {
+        $partido = Partido::create([
+            'nombre' => 'Partido Test Ratings',
+            'descripcion' => 'Test ratings limit',
+            'fecha_hora' => now()->addDays(-1), // Match in the past
+            'ubicacion' => 'Cancha Test',
+            'cupos_totales' => 14,
+            'cupos_suplentes' => 4,
+            'costo' => 200000,
+            'con_arbitro' => false,
+            'costo_por_jugador' => 11111.11,
+            'creador_id' => $this->cancha->id,
+            'estado' => 'finalizado', // Match already finished
+        ]);
+
+        // Register players
+        Inscripcion::create([
+            'partido_id' => $partido->id,
+            'jugador_id' => $this->jugador1->id,
+            'equipo' => 1,
+            'es_suplente' => false,
+            'estado' => 'inscrito',
+        ]);
+
+        Inscripcion::create([
+            'partido_id' => $partido->id,
+            'jugador_id' => $this->jugador2->id,
+            'equipo' => 1,
+            'es_suplente' => false,
+            'estado' => 'inscrito',
+        ]);
+
+        Inscripcion::create([
+            'partido_id' => $partido->id,
+            'jugador_id' => $this->jugador3->id,
+            'equipo' => 2,
+            'es_suplente' => false,
+            'estado' => 'inscrito',
+        ]);
+
+        // Create additional players for rating
+        $jugador4 = User::factory()->create([
+            'rol' => 'jugador',
+            'name' => 'Jugador 4',
+            'email' => 'jugador4@test.com',
+            'wallet' => 100000,
+        ]);
+
+        Inscripcion::create([
+            'partido_id' => $partido->id,
+            'jugador_id' => $jugador4->id,
+            'equipo' => 2,
+            'es_suplente' => false,
+            'estado' => 'inscrito',
+        ]);
+
+        // Jugador1 rates Jugador2 (first rating)
+        $response1 = $this->actingAs($this->jugador1, 'sanctum')
+            ->postJson('/api/ratings', [
+                'calificado_id' => $this->jugador2->id,
+                'partido_id' => $partido->id,
+                'tipo' => 'jugador_jugador',
+                'puntuacion' => 4,
+                'comentario' => 'Buen partido',
+            ]);
+
+        $response1->assertStatus(200);
+
+        // Jugador1 rates Jugador3 (second rating)
+        $response2 = $this->actingAs($this->jugador1, 'sanctum')
+            ->postJson('/api/ratings', [
+                'calificado_id' => $this->jugador3->id,
+                'partido_id' => $partido->id,
+                'tipo' => 'jugador_jugador',
+                'puntuacion' => 5,
+                'comentario' => 'Excelente',
+            ]);
+
+        $response2->assertStatus(200);
+
+        // Jugador1 tries to rate Jugador4 (third rating - should fail)
+        $response3 = $this->actingAs($this->jugador1, 'sanctum')
+            ->postJson('/api/ratings', [
+                'calificado_id' => $jugador4->id,
+                'partido_id' => $partido->id,
+                'tipo' => 'jugador_jugador',
+                'puntuacion' => 3,
+                'comentario' => 'Regular',
+            ]);
+
+        $response3->assertStatus(403)
+            ->assertJson([
+                'message' => 'Ya has alcanzado el límite de calificaciones para este partido (máximo 2)',
+            ]);
+
+        // Verify only 2 ratings were created
+        $this->assertEquals(2, Rating::where('partido_id', $partido->id)
+            ->where('calificador_id', $this->jugador1->id)
+            ->where('tipo', 'jugador_jugador')
+            ->count());
     }
 }

@@ -12,7 +12,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-gray-500 text-sm">Partidos Asignados</p>
-                    <p class="text-3xl font-bold text-blue-600" id="partidos-asignados">0</p>
+                    <p class="text-3xl font-bold text-blue-600" id="partidos-asignados">{{ $partidosAsignados }}</p>
                 </div>
                 <div class="bg-blue-100 rounded-full p-3">
                     <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -26,7 +26,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-gray-500 text-sm">Partidos Completados</p>
-                    <p class="text-3xl font-bold text-green-600" id="partidos-completados">0</p>
+                    <p class="text-3xl font-bold text-green-600" id="partidos-completados">{{ $partidosCompletados }}</p>
                 </div>
                 <div class="bg-green-100 rounded-full p-3">
                     <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -40,7 +40,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-gray-500 text-sm">Ingresos del Mes</p>
-                    <p class="text-3xl font-bold text-purple-600" id="ingresos-mes">$0</p>
+                    <p class="text-3xl font-bold text-purple-600" id="ingresos-mes">${{ number_format($ingresosMes, 0, ',', '.') }}</p>
                 </div>
                 <div class="bg-purple-100 rounded-full p-3">
                     <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,13 +55,13 @@
         <div class="bg-white rounded-lg shadow-md p-6">
             <h2 class="text-xl font-bold text-gray-800 mb-4">Acciones Rápidas</h2>
             <div class="space-y-3">
-                <a href="#" class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200">
+                <a href="{{ route('arbitro.partidos') }}" class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200">
                     Ver Calendario
                 </a>
-                <a href="#" class="block w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200">
-                    Registrar Resultado
+                <a href="{{ route('arbitro.partidos') }}" class="block w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200">
+                    Gestionar Partidos
                 </a>
-                <a href="#" class="block w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200">
+                <a href="{{ route('arbitro.historial') }}" class="block w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200">
                     Ver Historial
                 </a>
             </div>
