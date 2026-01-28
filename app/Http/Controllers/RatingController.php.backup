@@ -92,7 +92,97 @@ class RatingController extends Controller
 
         return response()->json(['message' => 'Calificación guardada', 'rating' => $rating]);
     }
+            eputiupc_cnalificacion', $puesutc>tnipo_calificacion)
+        -
+        if ($yaCalificado) {
+            return response()->json(['message' => 'Ya has calificado este aspecto para este jugador'], 403);
+        }===
 
+        $ratiesnRdtscecateagreg[r_oalificador-
+            'calificado_id' => $request->calificado_id,
+            'partido_id' => $request->partido_id,
+            'tipo' => $request->tipo,
+            'tipo_calificacion' => $request->tipo_calificacion,
+            'puntuacion' => $request->puntuacion,
+        ]);
+
+        // Actualizar estadísticas si es calificación a jugador
+        if ($request->tipo === 'jugador') {
+            $estadistica = Estadistica::firstOrCreate(['jugador_id' => $request->calificado_id]);
+            $estadistica->agregarCalificacion($request->tipo_calificacion, $request->puntuacion);
+        }
+
+        return response()->json(['message' => 'Calificación guardada', 'rating' => $rating]);
+    }
+
+    public function show($partidoId)
+    {
+        $partido = Partido::with(['jugadores', 'arbitro'])->findOrFail($partidoId);
+        $jugador = Auth::user();
+
+        // Verificar si puede calificar
+        $puedeCalificar = Inscripcion::where('partido_id', $partidoId)
+            ->where('jugador_id', $jugador->id)
+            ->exists() || $partido->arbitro_id === $jugador->id;
+    }
+
+    public function partidosEnMarcha()
+    {
+        $usuario = Auth::user();
+
+        // Partidos en curso: partidos que han iniciado según el horario pero no han terminado
+        $partidosEnMarcha = Partido::where('estado', 'en_curso')
+            ->whereHas('inscripciones', function ($query) use ($usuario) {
+                $query->where('jugador_id', $usuario->id)
+                      ->where('estado', 'confirmado');
+            })
+            ->with(['arbitro', 'inscripciones' => function ($query) {
+                $query->where('estado', 'confirmado');
+            }])
+            ->orderBy('fecha_hora', 'asc')
+            ->get();
+
+        return view('jugador.partidos', compact('partidosEnMarcha'));
+    }
+
+    public function partidosFinalizados()
+    {
+        $usuario = Auth::user();
+
+        // Partidos finalizados: partidos terminados donde el usuario participó
+        $partidosFinalizados = Partido::where('estado', 'finalizado')
+            ->whereHas('inscripciones', function ($query) use ($usuario) {
+                $query->where('jugador_id', $usuario->id)
+                      ->where('estado', 'confirmado');
+            })
+            ->with(['arbitro', 'inscripciones' => function ($query) {
+                $query->where('estado', 'confirmado');
+            }])
+            ->orderBy('fecha_hora', 'desc')
+            ->get();
+
+        // Para cada partido, obtener los jugadores que pueden ser calificados
+        foreach ($partidosFinalizados as $partido) {
+            $partido->jugadoresACalificar = $partido->inscripciones()
+                ->where('estado', 'confirmado')
+                ->where('jugador_id', '!=', $usuario->id)
+                ->with('jugador')
+                ->get()
+                ->pluck('jugador');
+
+            // Verificar si ya calificó al árbitro
+            $partido->arbitroCalificado = Rating::where('partido_id', $partido->id)
+                ->where('calificador_id', $usuario->id)
+                ->where('tipo', 'arbitro')
+                ->exists();
+        }
+
+        return view('jugador.partidos', compact('partidosFinalizados'));
+
+        $ratings = Rating::where('partido_id', $partidoId)->get();
+
+        return view('ratings.show', compact('partido', 'ratings', 'puedeCalificar'));
+    }
     public function show($partidoId)
     {
         $partido = Partido::with(['jugadores', 'arbitro'])->findOrFail($partidoId);
@@ -113,61 +203,6 @@ class RatingController extends Controller
         return view('ratings.show', compact('partido', 'ratings', 'puedeVer'));
     }
 
-    public function partidos()
-    {
-        $usuario = Auth::user();
-
-        // Partidos creados por el usuario
-        $partidosCreados = Partido::where('creador_id', $usuario->id)
-            ->with(['arbitro', 'inscripciones' => function ($query) {
-                $query->where('estado', 'confirmado');
-            }])
-            ->orderBy('fecha_hora', 'desc')
-            ->get();
-
-        // Partidos en curso: partidos que han iniciado según el horario pero no han terminado
-        $partidosEnMarcha = Partido::where('estado', 'en_curso')
-            ->whereHas('inscripciones', function ($query) use ($usuario) {
-                $query->where('jugador_id', $usuario->id)
-                      ->where('estado', 'confirmado');
-            })
-            ->with(['arbitro', 'inscripciones' => function ($query) {
-                $query->where('estado', 'confirmado');
-            }])
-            ->orderBy('fecha_hora', 'asc')
-            ->get();
-
-        // Partidos finalizados: partidos que ya pasaron el horario
-        $partidosFinalizados = Partido::where('estado', 'finalizado')
-            ->whereHas('inscripciones', function ($query) use ($usuario) {
-                $query->where('jugador_id', $usuario->id)
-                      ->where('estado', 'confirmado');
-            })
-            ->with(['arbitro', 'inscripciones' => function ($query) {
-                $query->where('estado', 'confirmado');
-            }])
-            ->orderBy('fecha_hora', 'desc')
-            ->get();
-
-        // Para cada partido finalizado, obtener los jugadores que pueden ser calificados
-        foreach ($partidosFinalizados as $partido) {
-            $partido->jugadoresACalificar = $partido->inscripciones()
-                ->where('estado', 'confirmado')
-                ->where('jugador_id', '!=', $usuario->id)
-                ->with('jugador')
-                ->get()
-                ->pluck('jugador');
-
-            // Verificar si ya calificó al árbitro
-            $partido->arbitroCalificado = Rating::where('partido_id', $partido->id)
-                ->where('calificador_id', $usuario->id)
-                ->where('tipo', 'arbitro')
-                ->exists();
-        }
-
-        return view('jugador.partidos', compact('partidosCreados', 'partidosEnMarcha', 'partidosFinalizados'));
-    }
-
     public function getCalificacionesUsuario($partidoId)
     {
         $usuario = Auth::user();
@@ -178,6 +213,13 @@ class RatingController extends Controller
             ->groupBy(['calificado_id', 'tipo_calificacion']);
 
         return response()->json($calificaciones);
+    }
+
+    private function mapTipoCalificacion($tipo)
+    {
+        // Este método ya no es necesario con el nuevo sistema
+        // Las calificaciones ahora usan tipos específicos directamente
+        return $tipo;
     }
 
     public function partidosEnMarchaApi()
@@ -257,5 +299,6 @@ class RatingController extends Controller
         }
 
         return response()->json(['message' => 'No se pudo finalizar el partido'], 400);
+        return $tipo;
     }
 }

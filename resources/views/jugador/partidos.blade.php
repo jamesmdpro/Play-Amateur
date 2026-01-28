@@ -271,7 +271,7 @@
                     </div>
 
                     <div class="partido-actions">
-                        <a href="{{ route('jugador.partidos.show', $partido['id']) }}"
+                        <a href="{{ route('jugador.partidos', $partido['id']) }}"
                            class="btn btn-action btn-ver">
                             <i class="bi bi-eye me-1"></i>Ver Detalles
                         </a>
@@ -292,9 +292,6 @@
             @endforelse
         </div>
 
-        {{-- =========================
-            EN MARCHA
-        ========================= --}}
         <div class="tab-pane fade" id="en-marcha">
             @forelse($partidosEnMarcha as $partido)
                 {{-- MISMO BLOQUE QUE ARRIBA --}}
@@ -325,6 +322,184 @@
             @endforelse
         </div>
 
+    </div>
+</div>
+
+        {{-- =========================
+            EN MARCHA
+        ========================= --}}
+        <div class="tab-pane fade" id="en-marcha">
+            @forelse($partidosEnMarcha ?? [] as $partido)
+                <div class="partido-item">
+                    <div class="partido-header">
+                        <div>
+                            <h4 class="partido-title">{{ $partido->nombre }}</h4>
+                            <span class="badge-estado badge-en-marcha">
+                                En Marcha
+                            </span>
+                        </div>
+                        <div class="jugadores-count">
+                            <i class="bi bi-people-fill"></i>
+                            {{ $partido->inscripciones->where('estado', 'confirmado')->count() }}
+                        </div>
+                    </div>
+
+                    <div class="partido-info">
+                        <div class="info-item">
+                            <i class="bi bi-calendar3"></i>
+                            {{ $partido->fecha_hora->format('d/m/Y') }}
+                        </div>
+                        <div class="info-item">
+                            <i class="bi bi-clock"></i>
+                            {{ $partido->fecha_hora->format('H:i') }}
+                        </div>
+                        <div class="info-item">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            {{ $partido->ubicacion }}
+                        </div>
+                        @if($partido->arbitro)
+                        <div class="info-item">
+                            <i class="bi bi-person-badge"></i>
+                            Árbitro: {{ $partido->arbitro->name }}
+                        </div>
+                        @endif
+                    </div>
+
+                    <div class="partido-actions">
+                        <a href="{{ route('ratings.show', $partido->id) }}"
+                           class="btn btn-action btn-ver">
+                            <i class="bi bi-eye me-1"></i>Ver Detalles
+                        </a>
+                    </div>
+                </div>
+            @empty
+                <div class="empty-state">
+                    <i class="bi bi-play-circle"></i>
+                    <h4>No hay partidos en marcha</h4>
+                    <p>Los partidos aparecerán aquí cuando inicien según su horario.</p>
+                </div>
+            @endforelse
+        </div>
+
+        {{-- =========================
+            FINALIZADOS
+        ========================= --}}
+        <div class="tab-pane fade" id="finalizados">
+            @forelse($partidosFinalizados ?? [] as $partido)
+                <div class="partido-item">
+                    <div class="partido-header">
+                        <button class="btn btn-sm btn-warning" onclick="abrirModalCalificaciones({{ $partido->id }})">
+                            <i class="bi bi-star me-1"></i>Calificar
+                        </button>
+                        <div>
+                            <h4 class="partido-title">{{ $partido->nombre }}</h4>
+                            <span class="badge-estado badge-finalizado">
+                                Finalizado
+                            </span>
+                        </div>
+                        <div class="jugadores-count">
+                            <i class="bi bi-people-fill"></i>
+                            {{ $partido->inscripciones->where('estado', 'confirmado')->count() }}
+                        </div>
+                    </div>
+
+                    <div class="partido-info">
+                        <div class="info-item">
+                            <i class="bi bi-calendar3"></i>
+                            {{ $partido->fecha_hora->format('d/m/Y') }}
+                        </div>
+                        <div class="info-item">
+                            <i class="bi bi-clock"></i>
+                            {{ $partido->fecha_hora->format('H:i') }}
+                        </div>
+                        <div class="info-item">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            {{ $partido->ubicacion }}
+                        </div>
+                        @if($partido->arbitro)
+                        <div class="info-item">
+                            <i class="bi bi-person-badge"></i>
+                            Árbitro: {{ $partido->arbitro->name }}
+                        </div>
+                        @endif
+                    </div>
+
+                    <div class="partido-actions">
+                        <a href="{{ route('ratings.show', $partido->id) }}"
+                           class="btn btn-action btn-ver">
+                            <i class="bi bi-eye me-1"></i>Ver Detalles
+                        </a>
+
+                        <button class="btn btn-action btn-editar"
+                                onclick="abrirModalCalificaciones({{ $partido->id }})">
+                            <i class="bi bi-star me-1"></i>Calificar
+                        </button>
+                    </div>
+                </div>
+            @empty
+                <div class="empty-state">
+                    <i class="bi bi-check-circle"></i>
+                    <h4>No hay partidos finalizados</h4>
+                    <p>Los partidos finalizados aparecerán aquí para que puedas calificarlos.</p>
+                </div>
+            @endforelse
+        </div>
+
+    </div>
+</div>
+        
+        <div class="tab-pane fade" id="en-marcha">
+            @forelse($partidosEnMarcha as $partido)
+                {{-- MISMO BLOQUE QUE ARRIBA --}}
+                <div class="partido-item">
+                    <h4 class="partido-title">{{ $partido['nombre'] }}</h4>
+                </div>
+            @empty
+                <div class="empty-state">
+                    <i class="bi bi-play-circle"></i>
+                    <h4>No hay partidos en marcha</h4>
+                </div>
+            @endforelse
+        </div>
+
+        {{-- =========================
+            FINALIZADOS
+        ========================= --}}
+        <div class="tab-pane fade" id="finalizados">
+            @forelse($partidosFinalizados as $partido)
+                <div class="partido-item">
+                    <h4 class="partido-title">{{ $partido['nombre'] }}</h4>
+                </div>
+            @empty
+                <div class="empty-state">
+                    <i class="bi bi-check-circle"></i>
+                    <h4>No hay partidos finalizados</h4>
+                </div>
+            @endforelse
+        </div>
+
+    </div>
+</div>
+
+{{-- =========================
+    MODAL DE CALIFICACIONES
+========================= --}}
+<div class="modal fade" id="modalCalificaciones" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-star-fill text-warning me-2"></i>
+                    Calificar Partido
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="calificacionesContent">
+                    <!-- Contenido dinámico -->
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

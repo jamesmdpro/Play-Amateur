@@ -15,10 +15,10 @@ class EventoPartidoSeeder extends Seeder
      */
     public function run(): void
     {
-        $partidos = Partido::with('inscripciones.jugador')->get();
+        $partidos = Partido::with('inscripciones.user')->get();
 
         foreach ($partidos as $partido) {
-            $jugadores = $partido->inscripciones->pluck('jugador');
+            $jugadores = $partido->inscripciones->pluck('user');
 
             // Solo crear eventos si hay jugadores inscritos
             if ($jugadores->isEmpty()) {

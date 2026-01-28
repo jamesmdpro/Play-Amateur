@@ -3,10 +3,13 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\RatingController;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
@@ -60,12 +63,7 @@ Route::middleware(['auth'])->group(function () {
             return view('jugador.partidos-disponibles');
         })->name('jugador.partidos-disponibles');
         
-        Route::post('/partidos/store', [App\Http\Controllers\PartidoController::class, 'storeFromJugador'])->name('jugador.partidos.store');
-        Route::get('/partidos/{id}', [App\Http\Controllers\PartidoController::class, 'show'])->name('jugador.partidos.show');
-        Route::get('/partidos/{id}/editar', [App\Http\Controllers\PartidoController::class, 'edit'])->name('jugador.partidos.edit');
-        Route::put('/partidos/{id}', [App\Http\Controllers\PartidoController::class, 'update'])->name('jugador.partidos.update');
-        
-        Route::get('/partidos', [App\Http\Controllers\PartidoController::class, 'indexWeb'])->name('jugador.partidos');
+        Route::get('/partidos', [App\Http\Controllers\RatingController::class, 'partidos'])->name('jugador.partidos');
         
     });
 

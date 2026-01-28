@@ -62,6 +62,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::post('/ratings', [App\Http\Controllers\RatingController::class, 'store']);
+    Route::get('/ratings/partidos/{partidoId}/calificaciones-usuario', [App\Http\Controllers\RatingController::class, 'getCalificacionesUsuario']);
+    Route::post('/partidos/{partidoId}/finalizar', [App\Http\Controllers\RatingController::class, 'finalizarPartido']);
 
     Route::prefix('jugador')->group(function () {
         Route::get('/estadisticas', [UserController::class, 'estadisticasJugador']);
@@ -71,7 +73,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/perfil/password', [UserController::class, 'updatePassword']);
 
         Route::get('/partidos/creados', [PartidoController::class, 'partidosCreados']);
-        Route::get('/partidos/enMarcha', [PartidoController::class, 'partidosEnMarcha']);
+        Route::get('/partidos/enMarcha', [App\Http\Controllers\RatingController::class, 'partidosEnMarchaApi']);
+        Route::get('/partidos/finalizados', [App\Http\Controllers\RatingController::class, 'partidosFinalizadosApi']);
         Route::get('/partidos/finalizados', [PartidoController::class, 'partidosFinalizados']);
         Route::post('/partidos/{id}/cancelar', [PartidoController::class, 'cancelarPartido']);
     });

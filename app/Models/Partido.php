@@ -134,4 +134,51 @@ class Partido extends Model
 
         return true;
     }
+    public function iniciarPartido()
+    {
+        if ($this->estado === 'programado' && now()->greaterThanOrEqualTo($this->fecha_hora)) {
+            $this->estado = 'en_curso';
+            $this->save();
+            return true;
+        }
+        return false;
+    }
+
+    public function finalizarPartido()
+    {
+        if ($this->estado === 'en_curso') {
+            $horaFin = $this->fecha_hora->copy()->addHour();
+            if (now()->greaterThanOrEqualTo($horaFin)) {
+                $this->estado = 'finalizado';
+                $this->save();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function finalizarPartidoManual()
+    {
+        if (in_array($this->estado, ['programado', 'en_curso'])) {
+            $this->estado = 'finalizado';
+            $this->save();
+            return true;
+        }
+        return false;
+    }
+
+    public function scopeEnMarcha($query)
+    {
+        return $query->where('estado', 'en_curso');
+    }
+
+    public function scopeFinalizados($query)
+    {
+        return $query->where('estado', 'finalizado');
+    }
+
+    public function scopeProgramados($query)
+    {
+        return $query->where('estado', 'programado');
+    }
 }

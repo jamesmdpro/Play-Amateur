@@ -14,6 +14,7 @@ class Rating extends Model
         'calificado_id',
         'partido_id',
         'tipo',
+        'tipo_calificacion',
         'puntuacion',
         'comentario',
     ];

@@ -35,4 +35,9 @@ class Inscripcion extends Model
     {
         return $this->belongsTo(User::class, 'jugador_id');
     }
+
+    public function jugador()
+    {
+        return $this->belongsTo(User::class, 'jugador_id');
+    }
 }

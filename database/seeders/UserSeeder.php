@@ -72,7 +72,7 @@ class UserSeeder extends Seeder
                 'posicion' => $jugador['posicion'],
                 'nivel' => $jugador['nivel'],
                 'ciudad' => 'Buenos Aires',
-                'wallet' => rand(100, 500),
+                'wallet' => rand(10000, 50000),
             ]);
         }
     }
